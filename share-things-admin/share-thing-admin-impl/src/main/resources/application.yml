@@ -1,0 +1,31 @@
+server:
+  port: 6080
+
+dubbo:
+  application:
+    name: share-things-admin-provider
+    logger: slf4j
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: zookeeper://119.45.4.154:2181
+    timeout: 120000
+    retries: 2  # 建议降低
+
+
+  logging:
+    level:
+      root: DEBUG
+      org.springframework.boot.autoconfigure: TRACE
+      com.zhangzc.leaf: DEBUG
+
+
+zhangzc:
+  leaf:
+    segmentEnable: true
+    snowflake-enable: true
+    jdbcUrl: jdbc:mysql://47.108.58.72:3307/leaf?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    snowflake-zk-address: 119.45.4.154:2181
+    jdbc-username: mikasa
+    jdbc-password: zhangzc123

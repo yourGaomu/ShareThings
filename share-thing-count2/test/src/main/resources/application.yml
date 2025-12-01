@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: share-thing-test-impl
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 47.108.58.72:8848
+        namespace: 0d275001-e548-47ce-b78e-23dbf9fd060c
+        username: nacos
+        password: nacos
+      config:
+        server-addr: 47.108.58.72:8848
+        namespace: 0d275001-e548-47ce-b78e-23dbf9fd060c
+        username: nacos
+        password: nacos
+        file-extension: yaml
+  config:
+    import:
+          - optional:nacos:${spring.application.name}.yaml?group=DEFAULT_GROUP&namespace=0d275001-e548-47ce-b78e-23dbf9fd060c&username=nacos&password=nacos
+
+dubbo:
+  application:
+    name: ${spring.application.name}
+  protocol:
+    name: tri
+    port: -1
+  registry:
+    address: nacos://47.108.58.72:8848
+    parameters:
+      namespace: 0d275001-e548-47ce-b78e-23dbf9fd060c
+      username: nacos
+      password: nacos
+#      注册为服务级
+    register-mode: instance
+
+# 如果需要从 Nacos 加载 dubbo.properties，才启用下面这段
+# dubbo:
+#   config-center:
+#     address: nacos://47.108.58.72:8848?namespace=0d275001-e548-47ce-b78e-23dbf9fd060c&username=nacos&password=nacos
+server:
+  port: 8081

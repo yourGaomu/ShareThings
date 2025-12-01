@@ -1,0 +1,9 @@
+dubbo:
+  application:
+    name: share-thing-admin
+  protocol:
+    name: tri
+    port: -1
+  registry:
+    id: share_things
+    address: zookeeper://45.192.106.45:2181

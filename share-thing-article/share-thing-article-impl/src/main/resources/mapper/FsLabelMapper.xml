@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhangzc.sharethingarticleimpl.mapper.FsLabelMapper">
+
+    <resultMap id="BaseResultMap" type="com.zhangzc.sharethingarticleimpl.pojo.domain.FsLabel">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="label_name" column="label_name" jdbcType="VARCHAR"/>
+            <result property="logo" column="logo" jdbcType="VARCHAR"/>
+            <result property="is_deleted" column="is_deleted" jdbcType="TINYINT"/>
+            <result property="create_user" column="create_user" jdbcType="BIGINT"/>
+            <result property="update_user" column="update_user" jdbcType="BIGINT"/>
+            <result property="create_time" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="update_time" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,label_name,logo,
+        is_deleted,create_user,update_user,
+        create_time,update_time
+    </sql>
+</mapper>

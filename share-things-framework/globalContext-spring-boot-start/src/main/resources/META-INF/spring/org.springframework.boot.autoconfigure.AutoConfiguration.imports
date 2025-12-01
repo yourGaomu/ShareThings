@@ -1,0 +1,2 @@
+com.zhangzc.globalcontextspringbootstart.config.ContextConfig
+com.zhangzc.globalcontextspringbootstart.config.FeignInterceptorConfig

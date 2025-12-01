@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhangzc.sharethingcommentimpl.mapper.FsCommentMapper">
+
+    <resultMap id="BaseResultMap" type="com.zhangzc.sharethingcommentimpl.pojo.domain.FsComment">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="pre_id" column="pre_id" jdbcType="INTEGER"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="article_id" column="article_id" jdbcType="INTEGER"/>
+            <result property="state" column="state" jdbcType="TINYINT"/>
+            <result property="is_deleted" column="is_deleted" jdbcType="TINYINT"/>
+            <result property="comment_user" column="comment_user" jdbcType="BIGINT"/>
+            <result property="create_time" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="update_time" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,pre_id,content,
+        article_id,state,is_deleted,
+        comment_user,create_time,update_time
+    </sql>
+</mapper>

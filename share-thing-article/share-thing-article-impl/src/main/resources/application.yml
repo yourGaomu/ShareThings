@@ -1,0 +1,39 @@
+dubbo:
+  application:
+    name: share-things-article-provider
+    logger: slf4j
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    id: share_things
+    address: zookeeper://119.45.4.154:2181
+    timeout: 120000  #超时时间  （毫秒）
+    retries: 5  #重试次数
+  config-center:
+    timeout: 120000  #超时时间  （毫秒）
+server:
+  port: 6081
+
+
+spring:
+  data:
+    mongodb:
+      host: 45.192.106.45
+      username: mikasa
+      password: zhangzc123
+      database: share_all
+      port: 27017
+
+  servlet:
+    multipart:
+      max-file-size: 10MB # 限制单个上传文件的最大大小为 10MB。如果上传的文件大小超过这个值，将会被拒绝上传。
+      max-request-size: 10MB # 限制整个上传请求的最大大小为 10MB。这包括所有上传文件的大小之和。如果请求总大小超过这个值，将会被拒绝。
+
+
+minio:
+  endpoint: http://119.45.4.154:9000
+  accessKey: mikasa
+  secretKey: mikasa123
+  bucketName: shareall
+
