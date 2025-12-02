@@ -6,5 +6,5 @@ import java.util.Map;
 public interface commentAndLike4Article {
 
    Map<Long,Map<String,Long>> getArticleLikeAndCommentNumbersByArticleIds(List<String> articleId);
-
+   Map<Long,Map<String,Boolean>> getLikeAndFollowByArticleIdAndUserId(List<String> articleId, List<String> userId);
 }

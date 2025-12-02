@@ -26,7 +26,5 @@ public class ArticleCheckCountDTO implements Serializable {
      */
     private Long pendingReviewCount;
 
-
     private static final long serialVersionUID = 1L;
-
 }

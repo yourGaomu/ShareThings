@@ -2,8 +2,7 @@ package com.zhangzc.sharethingarticleimpl.controller;
 
 
 import com.zhangzc.sharethingarticleimpl.server.common.ArticleService;
-import com.zhangzc.sharethingscommon.pojo.dto.ArticleDTO;
-import com.zhangzc.sharethingscommon.pojo.dto.ArticleSearchDTO;
+import com.zhangzc.sharethingscommon.pojo.dto.*;
 import com.zhangzc.sharethingscommon.utils.PageResponse;
 import com.zhangzc.sharethingscommon.utils.R;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +26,43 @@ public class ArticleController {
         return R.ok();
     }
 
-
     @GetMapping("getList")
     public R<PageResponse<ArticleDTO>> getList(@RequestBody ArticleSearchDTO articleSearchDTO){
         PageResponse<ArticleDTO> result =  articleService.getList(articleSearchDTO);
         return R.ok(result);
     }
+
+
+    @PostMapping("delete/{id}")
+    public R<Boolean> delete(@PathVariable Integer id) {
+        return articleService.deleteArticleById(id);
+    }
+
+    @GetMapping("articleTop")
+    public R<Boolean> articleTop(@RequestParam Integer id, @RequestParam Boolean top) {
+        return articleService.articleTop(id, top);
+    }
+
+    @GetMapping("getArticleCheckCount")
+    public R<ArticleCheckCountDTO> getArticleCheckCount(@RequestParam(required = false) String title) {
+        return articleService.getArticleCheckCount(title);
+    }
+
+    @GetMapping("getArticleCommentVisitTotal")
+    public R<TotalDTO> getArticleCommentVisitTotal() {
+        return articleService.getArticleCommentVisitTotal();
+    }
+
+    @GetMapping("getCountById")
+    public R<ArticleCountDTO> getCountById(@RequestParam Integer id) {
+        return articleService.getCountById(id);
+    }
+
+    @GetMapping("getLikesArticle")
+    public R<PageResponse<ArticleDTO>> getLikesArticle(LikeSearchDTO likeSearchDTO) {
+        PageResponse<ArticleDTO> result = articleService.getLikesArticle(likeSearchDTO);
+        return R.ok(result);
+    }
+
 
 }

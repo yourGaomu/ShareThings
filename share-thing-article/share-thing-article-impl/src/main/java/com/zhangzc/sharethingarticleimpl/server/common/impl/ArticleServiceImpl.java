@@ -11,13 +11,18 @@ import com.zhangzc.sharethingarticleimpl.server.common.ArticleService;
 import com.zhangzc.sharethingarticleimpl.server.common.FsArticleLabelService;
 import com.zhangzc.sharethingarticleimpl.server.common.FsArticleService;
 import com.zhangzc.sharethingarticleimpl.server.common.FsLabelService;
+import com.zhangzc.sharethingcommentapi.consts.articleCommentAndLike;
+import com.zhangzc.sharethingcommentapi.rpc.commentSearch;
+import com.zhangzc.sharethingcountapi.consts.LikeAndFollowEnums;
+import com.zhangzc.sharethingcountapi.pojo.dto.FsLikeDto;
+import com.zhangzc.sharethingcountapi.rpc.commentAndLike4Article;
 import com.zhangzc.sharethingcountapi.rpc.followCount;
 import com.zhangzc.sharethingcountapi.rpc.likeCount;
 import com.zhangzc.sharethingscommon.enums.ResponseCodeEnum;
 import com.zhangzc.sharethingscommon.exception.BusinessException;
-import com.zhangzc.sharethingscommon.pojo.dto.ArticleDTO;
-import com.zhangzc.sharethingscommon.pojo.dto.ArticleSearchDTO;
+import com.zhangzc.sharethingscommon.pojo.dto.*;
 import com.zhangzc.sharethingscommon.utils.PageResponse;
+import com.zhangzc.sharethingscommon.utils.R;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -31,10 +36,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -49,9 +51,14 @@ public class ArticleServiceImpl implements ArticleService {
     private final FsArticleLabelService fsArticleLabelService;
     private final FsLabelService fsLabelService;
     @DubboReference
-    private final likeCount likeCount;
+    private likeCount likeCount;
     @DubboReference
-    private final followCount followCount;
+    private followCount followCount;
+    @DubboReference
+    private commentSearch commentSearch;
+    @DubboReference
+    private commentAndLike4Article commentAndLike4Article;
+
 
     @Qualifier("threadPoolTaskExecutor")
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
@@ -124,7 +131,7 @@ public class ArticleServiceImpl implements ArticleService {
             List<FsArticleLabel> list = fsArticleLabelService.lambdaQuery().in(FsArticleLabel::getLabel_id, labelIds).list();
             if (list != null && !list.isEmpty()) {
                 list.forEach(fsArticleLabel -> articleIds.add(fsArticleLabel.getArticle_id()));
-            }else {
+            } else {
                 return PageResponse.success(result, currentPage, 0);
             }
         }
@@ -137,14 +144,14 @@ public class ArticleServiceImpl implements ArticleService {
                         .like(articleSearchDTO.getTitle() != null, FsArticle::getTitle, articleSearchDTO.getTitle())
                         .eq(articleSearchDTO.getCreateUser() != null, FsArticle::getCreate_user, articleSearchDTO.getCreateUser())
                         .page(page);
-                if (articlePage != null){
+                if (articlePage != null) {
                     //查到了数据
                     List<FsArticle> records = articlePage.getRecords();
                     //收集文章id
                     List<Integer> list = records.stream().map(FsArticle::getId).toList();
                     articleIds.addAll(list);
-                    CompletableFuture.runAsync(()->{
-                       //给结果赋值
+                    CompletableFuture.runAsync(() -> {
+                        //给结果赋值
                         records.forEach(fsArticle -> {
                             ArticleDTO articleDTO = new ArticleDTO();
                             BeanUtils.copyProperties(fsArticle, articleDTO);
@@ -160,6 +167,13 @@ public class ArticleServiceImpl implements ArticleService {
                         List<Long> toUserIds = records.stream().map(FsArticle::getCreate_user).distinct().toList();
                         Map<String, Boolean> followCountByUserIdAndToUserId = followCount.getFollowCountByUserIdAndToUserId(toUserIds, userId);
                         //查询文章的点赞的数量，评论的数量
+                        //todo
+                        Map<Long, Map<String, Long>> articleLikeAndCommentNumbersByArticleIds = commentAndLike4Article.getArticleLikeAndCommentNumbersByArticleIds(articleIdStrings);
+
+
+
+
+
 
 
                     });
@@ -170,7 +184,7 @@ public class ArticleServiceImpl implements ArticleService {
                             //查询用户信息
                         });
                         return true;
-                    },threadPoolTaskExecutor);
+                    }, threadPoolTaskExecutor);
 
                     CompletableFuture<List<MgArticle>> uCompletableFuture = CompletableFuture.supplyAsync(() -> {
                         //查询一些信息
@@ -178,7 +192,7 @@ public class ArticleServiceImpl implements ArticleService {
                         Query query = new Query();
                         query.addCriteria(Criteria.where("articleId").in(articleIds));
                         return mongoUtil.find(query, MgArticle.class, "bbs_article_markdown_info");
-                    },threadPoolTaskExecutor);
+                    }, threadPoolTaskExecutor);
                 }
                 return true;
             } catch (Exception e) {
@@ -191,5 +205,130 @@ public class ArticleServiceImpl implements ArticleService {
         }
         return PageResponse.success(result, currentPage, result.size());
     }
+
+    @Override
+    public R<Boolean> deleteArticleById(Integer id) {
+        //获取当前的
+        String userId = GlobalContext.get().toString();
+        FsArticle one = fsArticleService.lambdaQuery().eq(FsArticle::getId, id).one();
+        if (one == null)
+            return R.ok(false);
+        Integer isDeleted = one.getIs_deleted();
+        if (isDeleted == 1) {
+            return R.ok(false);
+        }
+        if (!one.getCreate_user().equals(Long.valueOf(userId))) {
+            return R.ok(false);
+        }
+        fsArticleService.lambdaUpdate()
+                .eq(FsArticle::getId, id)
+                .set(FsArticle::getUpdate_user, Long.valueOf(userId))
+                .set(FsArticle::getUpdate_time, new Date())
+                .set(FsArticle::getIs_deleted, 1).update();
+        return R.ok(true);
+    }
+
+    @Override
+    public R<Boolean> articleTop(Integer id, Boolean top) {
+        //获取当前的
+        String userId = GlobalContext.get().toString();
+        FsArticle one = fsArticleService.lambdaQuery().eq(FsArticle::getId, id).one();
+        if (one == null)
+            return R.ok(false);
+        Integer isDeleted = one.getIs_deleted();
+        if (isDeleted == 1) {
+            return R.ok(false);
+        }
+        if (!one.getCreate_user().equals(Long.valueOf(userId))) {
+            return R.ok(false);
+        }
+        fsArticleService.lambdaUpdate()
+                .eq(FsArticle::getId, id)
+                .set(FsArticle::getUpdate_user, Long.valueOf(userId))
+                .set(FsArticle::getUpdate_time, new Date())
+                .set(FsArticle::getTop, top ? one.getTop() + 1 : 0)
+                .update();
+        return R.ok(true);
+    }
+
+    @Override
+    public R<ArticleCheckCountDTO> getArticleCheckCount(String title) {
+        ArticleCheckCountDTO result = new ArticleCheckCountDTO();
+        List<FsArticle> list = fsArticleService.lambdaQuery().eq(FsArticle::getIs_deleted, 0).list();
+        Map<Integer, Long> collect = list.stream().collect(Collectors.groupingBy(FsArticle::getState, Collectors.counting()));
+        result.setEnableCount(collect.getOrDefault(1, 0L));
+        result.setDisabledCount(collect.getOrDefault(0, 0L));
+        result.setPendingReviewCount(collect.getOrDefault(-1, 0L));
+        return R.ok(result);
+    }
+
+    @Override
+    public R<TotalDTO> getArticleCommentVisitTotal() {
+        TotalDTO result = new TotalDTO();
+        //todo 优化
+        //文章数量
+        int size = fsArticleService.lambdaQuery().list().size();
+        //评论数量
+        Long commentNumbers = commentSearch.getCommentNumbers().get(articleCommentAndLike.commentNumbers);
+        result.setArticleCount((long) size);
+        result.setCommentCount(commentNumbers);
+        return R.ok(result);
+    }
+
+    @Override
+    public R<ArticleCountDTO> getCountById(Integer articleId) {
+        String userID = GlobalContext.get().toString();
+        ArticleCountDTO result = new ArticleCountDTO();
+        //查询是否点赞
+        //查询是否关注
+        commentAndLike4Article.getLikeAndFollowByArticleIdAndUserId(List.of(articleId.toString())
+                , List.of(userID)).forEach((k, v) -> {
+            result.setIsLike(v.get(LikeAndFollowEnums.isLike));
+            result.setIsFollow(v.get(LikeAndFollowEnums.isFollow));
+        });
+        //查询点赞数量
+        //查询评论数量
+        Map<Long, Map<String, Long>> articleLikeAndCommentNumbersByArticleIds = commentAndLike4Article.getArticleLikeAndCommentNumbersByArticleIds(List.of(articleId.toString()));
+        articleLikeAndCommentNumbersByArticleIds
+                .get(Long.valueOf(articleId)).forEach((k, v) -> {
+                    if (k.equals(articleCommentAndLike.commentNumber)) {
+                        result.setCommentCount(v);
+                    }
+                    if (k.equals(articleCommentAndLike.likeNumber)) {
+                        result.setLikeCount(v);
+                    }
+                });
+        return R.ok(result);
+    }
+
+    @Override
+    public PageResponse<ArticleDTO> getLikesArticle(LikeSearchDTO likeSearchDTO) {
+        String userID = GlobalContext.get().toString();
+        if (likeSearchDTO.getLikeUser() == null) {
+            throw new BusinessException(ResponseCodeEnum.BAD_REQUEST);
+        }
+        //获取文章id
+        Integer articleId = likeSearchDTO.getArticleId();
+        if (articleId != null) {
+            //todo
+        }
+        //获取当前的页数
+        Integer currentPage = likeSearchDTO.getCurrentPage();
+        //获取每页的数量
+        Integer pageSize = likeSearchDTO.getPageSize();
+        List<FsLikeDto> likeCountByLikeUser = likeCount.getLikeCountByLikeUser(currentPage, pageSize, likeSearchDTO.getLikeUser());
+        if (likeCountByLikeUser.isEmpty()) {
+            return PageResponse.success(Collections.emptyList(), currentPage, 0);
+        }
+        //获取文章ID
+        List<Integer> articleIds = likeCountByLikeUser.stream().map(FsLikeDto::getArticle_id).toList();
+        //去查询文章信息
+
+
+    }
+
+
+    private
+
 }
 

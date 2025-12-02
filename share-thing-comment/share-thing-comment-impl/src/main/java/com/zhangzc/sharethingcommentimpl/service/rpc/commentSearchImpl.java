@@ -54,4 +54,13 @@ public class commentSearchImpl implements commentSearch {
         ids.forEach(id -> join.putIfAbsent(id.longValue(), Map.of(articleCommentAndLike.commentNumber, 0L)));
         return join;
     }
+
+    @Override
+    public Map<String, Long> getCommentNumbers() {
+        List<FsComment> list = fsCommentService.lambdaQuery().list();
+        int size = list.size();
+        Map<String,Long> result = new HashMap<>();
+        result.put(articleCommentAndLike.commentNumbers, (long) size);
+        return result;
+    }
 }

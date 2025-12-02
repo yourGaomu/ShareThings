@@ -22,6 +22,12 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId> mybatis-plus-jsqlparser</artifactId>
+            <version>3.5.12</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.zhangzc</groupId>
             <artifactId>share-thing-comment-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>

@@ -7,4 +7,6 @@ public interface articleCommentAndLike {
      String commentNumber = "commentNumber";
      String likeNumber = "likeNumber";
 
+     String commentNumbers = "commentNumbers";
+
 }

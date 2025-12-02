@@ -35,7 +35,6 @@ public class followCountRpcImpl implements followCount {
         List<FsFollow> list = fsFollowServiceImpl.lambdaQuery()
                 .eq(FsFollow::getFrom_user, fromUserId).list();
         Set<Long> toUserSet = new HashSet<>(toUserIds);
-
         Map<String, Boolean> result = new HashMap<>();
         for (FsFollow fsFollow : list) {
             Long toUser = fsFollow.getTo_user();
@@ -45,7 +44,6 @@ public class followCountRpcImpl implements followCount {
                 } catch (Exception e) {
                 }
             }
-
             for (Long mouser : toUserIds) {
                 try {
                     result.putIfAbsent(mouser.toString(), false);

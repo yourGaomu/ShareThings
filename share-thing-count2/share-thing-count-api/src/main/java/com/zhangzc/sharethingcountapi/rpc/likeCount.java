@@ -12,4 +12,5 @@ public interface likeCount {
 
     List<Map<Long,Boolean>> getLikeCountByArticleIdAndUserId(List<String> articleId, String userId);
 
+    List<FsLikeDto> getLikeCountByLikeUser(Integer currentPage, Integer pageSize, Long likeUser);
 }

@@ -22,12 +22,15 @@ public class listenerConfig {
         return new onlineRedisUserCountImpl(redisUtil, redissonUtil, luaUtil);
     }
 
+    @Bean
+    @ConditionalOnProperty(prefix = "zhangzc.listener", name = "enableRedis", havingValue = "true")
+    public OnlineUserCount onlineUserCount(onlineRedisUserCountImpl onlineRedisUserCountImpl) {
+        return onlineRedisUserCountImpl;
+    }
+
 
     @Bean
     public OnlineUserUtil onlineUserUtil(OnlineUserCount onlineUserCount) {
         return new OnlineUserUtil(onlineUserCount);
     }
-
-
-
 }

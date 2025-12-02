@@ -7,4 +7,6 @@ public interface commentSearch {
 
     Map<Long,Map<String,Long>> getCommentAndLikeNumbersByArticleIds(List<String> articleId);
 
+    Map<String,Long> getCommentNumbers();
+
 }

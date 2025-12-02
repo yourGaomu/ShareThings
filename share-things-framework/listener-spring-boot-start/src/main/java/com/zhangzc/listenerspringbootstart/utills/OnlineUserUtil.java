@@ -6,8 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@Component
+
 @RequiredArgsConstructor
+@Component
 public class OnlineUserUtil {
 
     private final OnlineUserCount onlineUserCount;

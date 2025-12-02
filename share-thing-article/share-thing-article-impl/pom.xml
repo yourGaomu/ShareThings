@@ -37,7 +37,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>com.zhangzc</groupId>
             <artifactId>thredlocalpool-spring-boot-start</artifactId>
@@ -45,10 +44,10 @@
         </dependency>
 
         <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId> mybatis-plus-jsqlparser</artifactId>
-                <version>3.5.12</version>
-            </dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+            <version>3.5.12</version>
+        </dependency>
 
         <!-- Druid 数据库连接池 -->
         <dependency>

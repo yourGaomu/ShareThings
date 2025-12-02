@@ -1,6 +1,8 @@
 package com.zhangzc.sharethingcountimpl.service.rpc;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhangzc.sharethingcountapi.pojo.dto.FsLikeDto;
 import com.zhangzc.sharethingcountapi.rpc.likeCount;
 import com.zhangzc.sharethingcountimpl.pojo.domain.FsLike;
@@ -61,5 +63,25 @@ public class likeCountRpcImpl implements likeCount {
         }
 
         return Collections.singletonList(result);
+    }
+
+    @Override
+    public List<FsLikeDto> getLikeCountByLikeUser(Integer currentPage, Integer pageSize, Long likeUser) {
+        IPage<FsLike> page = new Page<>(currentPage, pageSize);
+        IPage<FsLike> page1 = fsLikeServiceImpl
+                .lambdaQuery()
+                .eq(FsLike::getLike_user, likeUser)
+                .page(page);
+        if (page1.getRecords() == null || page1.getRecords().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return page1.getRecords().stream().map(record -> {
+            FsLikeDto fsLikeDto = new FsLikeDto();
+            BeanUtils.copyProperties(record, fsLikeDto);
+            return fsLikeDto;
+        }).toList();
+
+
     }
 }

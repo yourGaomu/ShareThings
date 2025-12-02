@@ -10,4 +10,6 @@ public interface followCount {
     List<FsFollowDto> getFollowCountByUserId(String userId);
 
     Map<String,Boolean> getFollowCountByUserIdAndToUserId(List<Long> toUserIds, Long fromUserId);
+
+
 }

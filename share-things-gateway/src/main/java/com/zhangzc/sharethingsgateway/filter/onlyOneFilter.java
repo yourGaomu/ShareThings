@@ -22,13 +22,9 @@ import java.io.IOException;
 public class onlyOneFilter extends OncePerRequestFilter {
     private final OnlineUserUtil onlineUserUtil;
 
-
-
-
     @Override
     protected void doFilterInternal(HttpServletRequest request
             , HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
         try {
             //是否登录
             boolean isLogin = false;
@@ -51,11 +47,11 @@ public class onlyOneFilter extends OncePerRequestFilter {
             //已经登录
             if (isLogin) {
                 Object loginId = StpUtil.getLoginId();
-
+                onlineUserUtil.addOnlineCount(loginId.toString());
             }else {
-
+                //未登录
+                onlineUserUtil.addOnlineCount(remoteAddr);
             }
-
             filterChain.doFilter(request, response);
         } finally {
             GlobalContext.remove();
