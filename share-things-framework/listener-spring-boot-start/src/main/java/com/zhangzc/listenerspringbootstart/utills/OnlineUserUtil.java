@@ -13,11 +13,16 @@ public class OnlineUserUtil {
 
     private final OnlineUserCount onlineUserCount;
 
-    public void addOnlineCount(String userId) {
-        onlineUserCount.addOnlineCount(userId);
+    public Long addOnlineCount(String userId) {
+        return onlineUserCount.addOnlineCount(userId);
     }
 
-    public void subOnlineCount(String userId) {
-        onlineUserCount.subOnlineCount(userId);
+    public Long addOnlineCount(String userId,String userIp) {
+        return onlineUserCount.addOnlineCount(userId,userIp);
+    }
+
+
+    public Long subOnlineCount(String userId) {
+        return onlineUserCount.subOnlineCount(userId);
     }
 }

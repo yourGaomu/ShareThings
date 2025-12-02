@@ -17,8 +17,8 @@ public enum ResponseCodeEnum implements ResponseCodeInterface {
     LOGIN_PRAM_LOSS("500","参数缺少"),
     LOGIN_CODE_LOSS("501","你还没有发送过验证码"),
     LOGIN_CODE_ERROR("502", "验证码不正确"),
-    USER_NOT_FOUND("404", "用户不存在")
-    ;
+    USER_NOT_FOUND("404", "用户不存在"),
+    USER_PASSWORD_ERROR("400", "密码不正确");
     private final String code;
     private final String meg;
 

@@ -12,9 +12,8 @@ local expire_at = now + expire_seconds
 -- 添加或更新用户，设置其过期时间戳为 score
 redis.call('ZADD', key, expire_at, user)
 
--- 可选：立即清理已过期的用户（避免集合无限增长）
--- 删除 score <= now 的所有成员（即已过期的）
+-- 清理已过期的用户（score <= now）
 redis.call('ZREMRANGEBYSCORE', key, '-inf', now)
 
--- 返回当前在线人数（可选）
-return redis.call('ZCARD', key)
+-- 返回当前在线人数，但转为字符串
+return tostring(redis.call('ZCARD', key))

@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class onlineRedisUserCountImpl implements OnlineUserCount {
     private final RedisUtil redisUtil;
     private final RedissonUtil redissonUtil;
@@ -26,6 +26,15 @@ public class onlineRedisUserCountImpl implements OnlineUserCount {
                 redisUserCountKey, data);
         return Long.parseLong(execute.toString());
 
+    }
+
+    @Override
+    public Long addOnlineCount(String userId, String userIp) {
+        String redisUserCountKey = OnlineUserCountRedis.redisUserCountKey;
+        List<Object> data = List.of(userId, userIp,300L, System.currentTimeMillis() / 1000);
+        Object execute = luaUtil.execute("add_redis_online_user_login",
+                redisUserCountKey, data);
+        return Long.parseLong(execute.toString());
     }
 
     @Override

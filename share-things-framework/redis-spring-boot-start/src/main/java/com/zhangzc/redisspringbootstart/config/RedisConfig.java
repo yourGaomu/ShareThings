@@ -1,13 +1,9 @@
 package com.zhangzc.redisspringbootstart.config;
 
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.zhangzc.redisspringbootstart.utills.LimiterUtil;
-import com.zhangzc.redisspringbootstart.utills.LuaUtil;
-import com.zhangzc.redisspringbootstart.utills.RedisUtil;
-import com.zhangzc.redisspringbootstart.utills.RedissonUtil;
+import com.zhangzc.redisspringbootstart.utills.*;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
@@ -15,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -31,6 +28,11 @@ public class RedisConfig {
     @Autowired
     private RedisProperties redisProperties;
 
+    @Bean
+    public RedisSetUtil redisSetUtil(RedisTemplate<String, Object> redisTemplate) {
+        return new RedisSetUtil(redisTemplate);
+    }
+
 
     @Bean
     public LuaUtil luaUtil(RedisTemplate<String, Object> redisTemplate) {
@@ -45,7 +47,7 @@ public class RedisConfig {
     /**
      * 显式配置 Redis 连接工厂（Lettuce），读取application.yml中的配置
      */
-    @Bean
+/*    @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         LettuceConnectionFactory factory = new LettuceConnectionFactory();
         factory.setHostName(redisProperties.getHost());
@@ -58,7 +60,7 @@ public class RedisConfig {
         }
         // 还可以设置连接超时等其他参数，根据redisProperties中的属性来设置
         return factory;
-    }
+    }*/
 
     /**
      * 配置 RedisTemplate
@@ -117,7 +119,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedissonUtil redissonUtil(RedissonClient redissonClient){
+    public RedissonUtil redissonUtil(RedissonClient redissonClient) {
         return new RedissonUtil(redissonClient);
     }
 

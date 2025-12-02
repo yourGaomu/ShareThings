@@ -21,8 +21,6 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <dependencies>
-
-
         <!-- Druid 数据库连接池 -->
         <dependency>
             <groupId>com.alibaba</groupId>

@@ -1,12 +1,12 @@
 package com.zhangzc.sharethingsgateway;
 
 
-import org.mybatis.spring.annotation.MapperScan;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-
+@EnableDubbo
 public class ShareThingsGatewayApplication {
 
     public static void main(String[] args) {

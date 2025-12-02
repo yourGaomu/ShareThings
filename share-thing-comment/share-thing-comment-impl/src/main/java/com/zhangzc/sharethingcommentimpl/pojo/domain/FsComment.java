@@ -25,7 +25,7 @@ public class FsComment implements Serializable {
      * 父评论id
      */
     @TableField(value = "pre_id")
-    private Integer pre_id;
+    private Integer preId;
 
     /**
      * 评论内容
@@ -37,7 +37,7 @@ public class FsComment implements Serializable {
      * 被评论帖子id
      */
     @TableField(value = "article_id")
-    private Integer article_id;
+    private Integer articleId;
 
     /**
      * 状态(0禁用,1启用)
@@ -49,25 +49,25 @@ public class FsComment implements Serializable {
      * 逻辑删除(0正常,1删除)
      */
     @TableField(value = "is_deleted")
-    private Integer is_deleted;
+    private Integer isDeleted;
 
     /**
      * 评论用户id
      */
     @TableField(value = "comment_user")
-    private Long comment_user;
+    private Long commentUser;
 
     /**
      * 创建时间
      */
     @TableField(value = "create_time")
-    private Date create_time;
+    private Date createTime;
 
     /**
      * 更新时间
      */
     @TableField(value = "update_time")
-    private Date update_time;
+    private Date updateTime;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
@@ -85,14 +85,14 @@ public class FsComment implements Serializable {
         }
         FsComment other = (FsComment) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getPre_id() == null ? other.getPre_id() == null : this.getPre_id().equals(other.getPre_id()))
+            && (this.getPreId() == null ? other.getPreId() == null : this.getPreId().equals(other.getPreId()))
             && (this.getContent() == null ? other.getContent() == null : this.getContent().equals(other.getContent()))
-            && (this.getArticle_id() == null ? other.getArticle_id() == null : this.getArticle_id().equals(other.getArticle_id()))
+            && (this.getArticleId() == null ? other.getArticleId() == null : this.getArticleId().equals(other.getArticleId()))
             && (this.getState() == null ? other.getState() == null : this.getState().equals(other.getState()))
-            && (this.getIs_deleted() == null ? other.getIs_deleted() == null : this.getIs_deleted().equals(other.getIs_deleted()))
-            && (this.getComment_user() == null ? other.getComment_user() == null : this.getComment_user().equals(other.getComment_user()))
-            && (this.getCreate_time() == null ? other.getCreate_time() == null : this.getCreate_time().equals(other.getCreate_time()))
-            && (this.getUpdate_time() == null ? other.getUpdate_time() == null : this.getUpdate_time().equals(other.getUpdate_time()));
+            && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()))
+            && (this.getCommentUser() == null ? other.getCommentUser() == null : this.getCommentUser().equals(other.getCommentUser()))
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
     }
 
     @Override
@@ -100,14 +100,14 @@ public class FsComment implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getPre_id() == null) ? 0 : getPre_id().hashCode());
+        result = prime * result + ((getPreId() == null) ? 0 : getPreId().hashCode());
         result = prime * result + ((getContent() == null) ? 0 : getContent().hashCode());
-        result = prime * result + ((getArticle_id() == null) ? 0 : getArticle_id().hashCode());
+        result = prime * result + ((getArticleId() == null) ? 0 : getArticleId().hashCode());
         result = prime * result + ((getState() == null) ? 0 : getState().hashCode());
-        result = prime * result + ((getIs_deleted() == null) ? 0 : getIs_deleted().hashCode());
-        result = prime * result + ((getComment_user() == null) ? 0 : getComment_user().hashCode());
-        result = prime * result + ((getCreate_time() == null) ? 0 : getCreate_time().hashCode());
-        result = prime * result + ((getUpdate_time() == null) ? 0 : getUpdate_time().hashCode());
+        result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
+        result = prime * result + ((getCommentUser() == null) ? 0 : getCommentUser().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         return result;
     }
 
@@ -118,14 +118,14 @@ public class FsComment implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", pre_id=").append(pre_id);
+        sb.append(", preId=").append(preId);
         sb.append(", content=").append(content);
-        sb.append(", article_id=").append(article_id);
+        sb.append(", articleId=").append(articleId);
         sb.append(", state=").append(state);
-        sb.append(", is_deleted=").append(is_deleted);
-        sb.append(", comment_user=").append(comment_user);
-        sb.append(", create_time=").append(create_time);
-        sb.append(", update_time=").append(update_time);
+        sb.append(", isDeleted=").append(isDeleted);
+        sb.append(", commentUser=").append(commentUser);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", updateTime=").append(updateTime);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

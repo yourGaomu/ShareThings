@@ -1,7 +1,7 @@
 package com.zhangzc.sharethingcommentimpl.service.rpc;
 
 import com.zhangzc.sharethingcommentapi.consts.articleCommentAndLike;
-import com.zhangzc.sharethingcommentapi.rpc.commentSearch;
+import com.zhangzc.sharethingcommentapi.rpc.CommentSearch;
 import com.zhangzc.sharethingcommentimpl.pojo.domain.FsComment;
 import com.zhangzc.sharethingcommentimpl.service.FsCommentLikeService;
 import com.zhangzc.sharethingcommentimpl.service.FsCommentService;
@@ -17,13 +17,13 @@ import java.util.stream.Collectors;
 
 @DubboService
 @RequiredArgsConstructor
-public class commentSearchImpl implements commentSearch {
+public class commentSearchImpl implements CommentSearch {
     private final FsCommentService fsCommentService;
     private final FsCommentLikeService fsCommentLikeService;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     @Override
-    public Map<Long, Map<String, Long>> getCommentAndLikeNumbersByArticleIds(List<String> articleId) {
+    public Map<Long, Map<String, Long>> getCommentNumbersByArticleIds(List<String> articleId) {
         // 把传入的 string id 转为 Integer 列表（若无法解析则忽略）
         List<Integer> ids = articleId.stream()
                 .map(s -> {
@@ -35,11 +35,12 @@ public class commentSearchImpl implements commentSearch {
         // 异步查询评论数量（返回 Map<articleId, {commentNumber: n}>）
         CompletableFuture<Map<Long, Map<String, Long>>> commentsFuture = CompletableFuture.supplyAsync(() -> {
             List<FsComment> list = fsCommentService.lambdaQuery()
-                    .in(FsComment::getArticle_id, ids)
+                    .in(FsComment::getArticleId, ids)
+                    .eq(FsComment::getIsDeleted, 0)
                     .list();
-
+            // 按文章分组计数
             Map<Long, Long> grouped = list.stream()
-                    .collect(Collectors.groupingBy(c -> c.getArticle_id().longValue(), Collectors.counting()));
+                    .collect(Collectors.groupingBy(c -> c.getArticleId().longValue(), Collectors.counting()));
 
             Map<Long, Map<String, Long>> result = new HashMap<>();
             grouped.forEach((k, v) -> result.put(k, Map.of(articleCommentAndLike.commentNumber, v)));

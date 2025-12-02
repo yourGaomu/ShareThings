@@ -24,7 +24,7 @@ public class FsCommentLikeDto implements Serializable {
      * 评论id
      */
 
-    private Integer comment_id;
+    private Integer commentId;
 
     /**
      * 状态(0取消,1点赞)
@@ -36,19 +36,19 @@ public class FsCommentLikeDto implements Serializable {
      * 评论点赞用户id
      */
 
-    private Long like_user;
+    private Long likeUser;
 
     /**
      * 创建时间
      */
 
-    private Date create_time;
+    private Date createTime;
 
     /**
      * 更新时间
      */
 
-    private Date update_time;
+    private Date updateTime;
 
 
     private static final long serialVersionUID = 1L;
@@ -66,11 +66,11 @@ public class FsCommentLikeDto implements Serializable {
         }
         FsCommentLikeDto other = (FsCommentLikeDto) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getComment_id() == null ? other.getComment_id() == null : this.getComment_id().equals(other.getComment_id()))
+            && (this.getCommentId() == null ? other.getCommentId() == null : this.getCommentId().equals(other.getCommentId()))
             && (this.getState() == null ? other.getState() == null : this.getState().equals(other.getState()))
-            && (this.getLike_user() == null ? other.getLike_user() == null : this.getLike_user().equals(other.getLike_user()))
-            && (this.getCreate_time() == null ? other.getCreate_time() == null : this.getCreate_time().equals(other.getCreate_time()))
-            && (this.getUpdate_time() == null ? other.getUpdate_time() == null : this.getUpdate_time().equals(other.getUpdate_time()));
+            && (this.getLikeUser() == null ? other.getLikeUser() == null : this.getLikeUser().equals(other.getLikeUser()))
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
     }
 
     @Override
@@ -78,11 +78,11 @@ public class FsCommentLikeDto implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getComment_id() == null) ? 0 : getComment_id().hashCode());
+        result = prime * result + ((getCommentId() == null) ? 0 : getCommentId().hashCode());
         result = prime * result + ((getState() == null) ? 0 : getState().hashCode());
-        result = prime * result + ((getLike_user() == null) ? 0 : getLike_user().hashCode());
-        result = prime * result + ((getCreate_time() == null) ? 0 : getCreate_time().hashCode());
-        result = prime * result + ((getUpdate_time() == null) ? 0 : getUpdate_time().hashCode());
+        result = prime * result + ((getLikeUser() == null) ? 0 : getLikeUser().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         return result;
     }
 
@@ -93,11 +93,11 @@ public class FsCommentLikeDto implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", comment_id=").append(comment_id);
+        sb.append(", commentId=").append(commentId);
         sb.append(", state=").append(state);
-        sb.append(", like_user=").append(like_user);
-        sb.append(", create_time=").append(create_time);
-        sb.append(", update_time=").append(update_time);
+        sb.append(", likeUser=").append(likeUser);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", updateTime=").append(updateTime);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

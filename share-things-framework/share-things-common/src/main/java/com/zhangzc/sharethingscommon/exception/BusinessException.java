@@ -26,7 +26,7 @@ public class BusinessException extends RuntimeException {
 
     // 3. 传错误码 + 消息（最常用）
     public BusinessException(String code, String message) {
-        this("code", message, null);
+        this(code, message, null);
     }
 
     // 4. 传错误码 + 消息 + 附加数据

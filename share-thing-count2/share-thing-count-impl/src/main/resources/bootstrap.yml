@@ -27,14 +27,14 @@ spring:
 
 dubbo:
   application:
-    name: ${spring.application.name}
+    name: ${spring.application.name}-rpc
   protocol:
     name: tri
     port: -1
   registry:
     address: nacos://47.108.58.72:8848
     parameters:
-      namespace: 0d275001-e548-47ce-b78e-23dbf9fd060c
+      namespace: 097517a7-1b6f-4b1e-80d0-070c3465fc77
       username: nacos
       password: nacos
     register-mode: instance

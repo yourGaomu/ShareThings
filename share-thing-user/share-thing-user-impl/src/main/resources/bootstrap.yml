@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: share-thing-user-impl
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 47.108.58.72:8848
+        namespace: 0d275001-e548-47ce-b78e-23dbf9fd060c
+        username: nacos
+        password: nacos
+      config:
+        server-addr: 47.108.58.72:8848
+        namespace: 0d275001-e548-47ce-b78e-23dbf9fd060c
+        username: nacos
+        password: nacos
+        file-extension: yaml
+        shared-configs: # 共享配置
+          - data-id: share_user.yaml
+            group: mysql
+            refresh: true
+          - data-id: redis.yaml
+            group: redis
+            refresh: true
+          - data-id: share_all_leaf.yaml
+            group: leaf
+            refresh: true
+          - data-id: share_sms.yaml
+            group: sms
+            refresh: true
+          - data-id: share_satoken.yaml
+            group: satoken
+            refresh: true
+          - data-id: share_security.yaml
+            group: security
+            refresh: true
+          - data-id: share_filter.yaml
+            group: filter
+            refresh: true
+
+  config:
+    import:
+      - optional:nacos:${spring.application.name}.yaml?group=DEFAULT_GROUP&namespace=0d275001-e548-47ce-b78e-23dbf9fd060c&username=nacos&password=nacos
+
+dubbo:
+  application:
+    name: ${spring.application.name}-rpc
+  protocol:
+    name: tri
+    port: -1
+  registry:
+    address: nacos://47.108.58.72:8848
+    parameters:
+      namespace: 097517a7-1b6f-4b1e-80d0-070c3465fc77
+      username: nacos
+      password: nacos
+    register-mode: instance
+
+

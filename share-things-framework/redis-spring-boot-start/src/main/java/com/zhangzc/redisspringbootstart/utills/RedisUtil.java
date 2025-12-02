@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor // 自动生成带参构造函数
@@ -21,6 +18,7 @@ public class RedisUtil {
     public RedisUtil(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
+
 
     public boolean delHash(String key ,List<String> items){
         try {
@@ -230,6 +228,26 @@ public class RedisUtil {
     }
 
     // ================================Map=================================
+
+    /**
+     * 获取Redis Hash结构中指定key下的多个item（字段）对应的值
+     *
+     * @param key   键 不能为null
+     * @param items 字段集合 不能为null且不能为空
+     * @return 对应字段的值列表（顺序与items一致，不存在的字段对应值为null）
+     */
+    public List<Object> hmget(String key, Collection<?> items) {
+        // 参数校验
+        if (key == null) {
+            throw new IllegalArgumentException("key不能为null");
+        }
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("items集合不能为null且不能为空");
+        }
+        // 调用multiGet方法获取多个字段值
+        return redisTemplate.opsForHash().multiGet(key, (Collection<Object>) items);
+    }
+
 
     /**
      * HashGet

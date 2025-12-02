@@ -1,0 +1,9 @@
+# 线程池自定义配置（可选，不配置则用默认逻辑）
+thread:
+  pool:
+    core-size: 8          # 自定义核心线程数
+    max-size: 16          # 自定义最大线程数
+    queue-capacity: 2000  # 自定义队列容量
+    keep-alive-seconds: 30
+    name-prefix: user-biz-thread-
+

@@ -22,8 +22,6 @@
     <packaging>jar</packaging>
 
     <dependencies>
-
-
         <dependency>
             <groupId>com.zhangzc</groupId>
             <artifactId>share-thing-count-api</artifactId>
@@ -35,7 +33,6 @@
             <artifactId>globalContext-spring-boot-start</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-
 
         <dependency>
             <groupId>com.zhangzc</groupId>
@@ -210,6 +207,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zhangzc</groupId>
+            <artifactId>redis-spring-boot-start</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

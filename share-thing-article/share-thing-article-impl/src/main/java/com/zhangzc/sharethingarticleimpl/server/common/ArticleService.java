@@ -6,6 +6,7 @@ import com.zhangzc.sharethingscommon.utils.R;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public interface ArticleService {
     void create(MultipartFile picture, ArticleDTO articleDTO, List<Integer> labelIds);
@@ -22,5 +23,5 @@ public interface ArticleService {
 
     R<ArticleCountDTO> getCountById(Integer id);
 
-    PageResponse<ArticleDTO> getLikesArticle(LikeSearchDTO likeSearchDTO);
+    PageResponse<ArticleDTO> getLikesArticle(LikeSearchDTO likeSearchDTO) throws ExecutionException, InterruptedException;
 }

@@ -25,7 +25,7 @@ public class FsFollow implements Serializable {
      * 发起关注的人
      */
     @TableField(value = "from_user")
-    private Long from_user;
+    private Long fromUser;
 
     /**
      * 状态(0取消,1关注)
@@ -37,19 +37,19 @@ public class FsFollow implements Serializable {
      * 被关注的人
      */
     @TableField(value = "to_user")
-    private Long to_user;
+    private Long toUser;
 
     /**
      * 创建时间
      */
     @TableField(value = "create_time")
-    private Date create_time;
+    private Date createTime;
 
     /**
      * 更新时间
      */
     @TableField(value = "update_time")
-    private Date update_time;
+    private Date updateTime;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
@@ -67,11 +67,11 @@ public class FsFollow implements Serializable {
         }
         FsFollow other = (FsFollow) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getFrom_user() == null ? other.getFrom_user() == null : this.getFrom_user().equals(other.getFrom_user()))
+            && (this.getFromUser() == null ? other.getFromUser() == null : this.getFromUser().equals(other.getFromUser()))
             && (this.getState() == null ? other.getState() == null : this.getState().equals(other.getState()))
-            && (this.getTo_user() == null ? other.getTo_user() == null : this.getTo_user().equals(other.getTo_user()))
-            && (this.getCreate_time() == null ? other.getCreate_time() == null : this.getCreate_time().equals(other.getCreate_time()))
-            && (this.getUpdate_time() == null ? other.getUpdate_time() == null : this.getUpdate_time().equals(other.getUpdate_time()));
+            && (this.getToUser() == null ? other.getToUser() == null : this.getToUser().equals(other.getToUser()))
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
     }
 
     @Override
@@ -79,11 +79,11 @@ public class FsFollow implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getFrom_user() == null) ? 0 : getFrom_user().hashCode());
+        result = prime * result + ((getFromUser() == null) ? 0 : getFromUser().hashCode());
         result = prime * result + ((getState() == null) ? 0 : getState().hashCode());
-        result = prime * result + ((getTo_user() == null) ? 0 : getTo_user().hashCode());
-        result = prime * result + ((getCreate_time() == null) ? 0 : getCreate_time().hashCode());
-        result = prime * result + ((getUpdate_time() == null) ? 0 : getUpdate_time().hashCode());
+        result = prime * result + ((getToUser() == null) ? 0 : getToUser().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         return result;
     }
 
@@ -94,11 +94,11 @@ public class FsFollow implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", from_user=").append(from_user);
+        sb.append(", fromUser=").append(fromUser);
         sb.append(", state=").append(state);
-        sb.append(", to_user=").append(to_user);
-        sb.append(", create_time=").append(create_time);
-        sb.append(", update_time=").append(update_time);
+        sb.append(", toUser=").append(toUser);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", updateTime=").append(updateTime);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

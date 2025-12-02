@@ -23,6 +23,12 @@
     <dependencies>
         <dependency>
             <groupId>com.zhangzc</groupId>
+            <artifactId>share-thing-user-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zhangzc</groupId>
             <artifactId>share-thing-comment-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>

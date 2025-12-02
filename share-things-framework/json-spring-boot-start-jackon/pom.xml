@@ -5,8 +5,8 @@
     <groupId>com.zhangzc</groupId>
     <artifactId>json-spring-boot-start-jackon</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>fakebook-spring-boot-start-jackon</name>
-    <description>fakebook-spring-boot-start-jackon</description>
+    <name>json-spring-boot-start-jackon</name>
+    <description>json-spring-boot-start-jackonn</description>
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

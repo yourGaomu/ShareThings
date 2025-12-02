@@ -23,6 +23,11 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+        </dependency>
         <!-- Bootstrap上下文支持（加载配置中心配置） -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

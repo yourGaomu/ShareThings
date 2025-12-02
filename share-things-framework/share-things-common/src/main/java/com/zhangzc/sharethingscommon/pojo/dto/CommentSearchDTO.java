@@ -1,6 +1,7 @@
 package com.zhangzc.sharethingscommon.pojo.dto;
 
-import com.liang.bbs.common.enums.SortRuleEnum;
+
+import com.zhangzc.sharethingscommon.enums.SortRuleEnum;
 import lombok.Data;
 
 import java.io.Serializable;
