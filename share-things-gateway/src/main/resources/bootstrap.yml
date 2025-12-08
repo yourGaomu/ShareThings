@@ -21,9 +21,7 @@ spring:
           - data-id: share_satoken.yaml
             group: satoken
             refresh: true
-          - data-id: share_sms.yaml
-            group: sms
-            refresh: true
+
           - data-id: share_gateway.yaml
             group: gateway
             refresh: true
