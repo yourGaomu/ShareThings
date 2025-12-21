@@ -2,8 +2,11 @@ package com.zhangzc.sharethingarticleimpl.controller;
 
 
 import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
+import com.zhangzc.sharethingarticleimpl.interfaces.GetArticleInfodAddPV;
 import com.zhangzc.sharethingarticleimpl.pojo.mongoDomain.MgArticle;
-import com.zhangzc.sharethingarticleimpl.server.common.ArticleService;
+import com.zhangzc.sharethingarticleimpl.pojo.req.GetArticleInfoVo;
+import com.zhangzc.sharethingarticleimpl.server.ArticleService;
+import com.zhangzc.sharethingscommon.enums.ArticleStateEnum;
 import com.zhangzc.sharethingscommon.pojo.dto.*;
 import com.zhangzc.sharethingscommon.utils.PageResponse;
 import com.zhangzc.sharethingscommon.utils.R;
@@ -12,7 +15,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -37,7 +39,6 @@ public class ArticleController {
         PageResponse<ArticleDTO> result =  articleService.getList(articleSearchDTO);
         return R.ok(result);
     }
-
 
     @PostMapping("delete/{id}")
     public R<Boolean> delete(@PathVariable Integer id) {
@@ -64,9 +65,23 @@ public class ArticleController {
         return articleService.getCountById(id);
     }
 
+
     @PostMapping("getLikesArticle")
     public R<PageResponse<ArticleDTO>> getLikesArticle(LikeSearchDTO likeSearchDTO) throws ExecutionException, InterruptedException {
         PageResponse<ArticleDTO> result = articleService.getLikesArticle(likeSearchDTO);
+        return R.ok(result);
+    }
+
+    @PostMapping("getById")
+    @GetArticleInfodAddPV("#getArticleInfoVo.id")
+    public R<ArticleDTO> getArticleByLabelId(@RequestBody GetArticleInfoVo getArticleInfoVo) throws ExecutionException, InterruptedException {
+        return articleService.getArticleByLabelId(getArticleInfoVo);
+    }
+
+    @PostMapping("/getPersonalArticles")
+    public R<PageResponse<ArticleDTO>> getPersonalArticles(@RequestBody ArticleSearchDTO articleSearchDTO
+            , @RequestBody(required = false) ArticleStateEnum articleStateEnum) {
+        PageResponse<ArticleDTO> result = articleService.getPersonalArticles(articleSearchDTO,articleStateEnum);
         return R.ok(result);
     }
 

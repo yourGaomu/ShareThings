@@ -18,20 +18,27 @@ import java.util.concurrent.TimeUnit;
 public class RedisSetUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final Long DefaultExpireTime = 3600L;
 
     /**
-     * 向Set中添加单个元素
+     * 向Set中添加单个元素（默认过期时间1小时）
      * @param key 集合键
      * @param value 元素值
      * @return true：添加成功（元素不存在），false：添加失败（元素已存在）
      */
     public <T> boolean add(String key, T value) {
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        return setOps.add(key, value) > 0;
+        Long result = setOps.add(key, value);
+        // 添加成功后设置过期时间
+        if (result != null && result > 0) {
+            redisTemplate.expire(key, DefaultExpireTime, TimeUnit.SECONDS);
+            return true;
+        }
+        return false;
     }
 
     /**
-     * 向Set中批量添加元素
+     * 向Set中批量添加元素（默认过期时间1小时）
      * @param key 集合键
      * @param values 元素集合
      * @return 成功添加的元素数量
@@ -41,7 +48,12 @@ public class RedisSetUtil {
             return 0;
         }
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        return setOps.add(key, values.toArray());
+        Long result = setOps.add(key, values.toArray());
+        // 添加成功后设置过期时间
+        if (result != null && result > 0) {
+            redisTemplate.expire(key, DefaultExpireTime, TimeUnit.SECONDS);
+        }
+        return result != null ? result : 0;
     }
 
     /**
@@ -201,7 +213,7 @@ public class RedisSetUtil {
     }
 
     /**
-     * 计算多个Set的交集，并将结果存储到新的Set中
+     * 计算多个Set的交集，并将结果存储到新的Set中（默认过期时间1小时）
      * @param destKey 结果集合键
      * @param keys 待计算交集的集合键列表
      * @return 交集的元素数量
@@ -211,11 +223,16 @@ public class RedisSetUtil {
             return 0;
         }
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        return setOps.intersectAndStore(keys, destKey);
+        Long result = setOps.intersectAndStore(keys, destKey);
+        // 存储成功后设置过期时间
+        if (result != null && result > 0) {
+            redisTemplate.expire(destKey, DefaultExpireTime, TimeUnit.SECONDS);
+        }
+        return result != null ? result : 0;
     }
 
     /**
-     * 计算两个Set的交集，并将结果存储到新的Set中
+     * 计算两个Set的交集，并将结果存储到新的Set中（默认过期时间1小时）
      * @param destKey 结果集合键
      * @param key1 第一个集合键
      * @param key2 第二个集合键
@@ -223,7 +240,12 @@ public class RedisSetUtil {
      */
     public long intersectAndStore(String destKey, String key1, String key2) {
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        return setOps.intersectAndStore(key1, key2, destKey);
+        Long result = setOps.intersectAndStore(key1, key2, destKey);
+        // 存储成功后设置过期时间
+        if (result != null && result > 0) {
+            redisTemplate.expire(destKey, DefaultExpireTime, TimeUnit.SECONDS);
+        }
+        return result != null ? result : 0;
     }
 
     /**
@@ -269,7 +291,7 @@ public class RedisSetUtil {
     }
 
     /**
-     * 计算多个Set的并集，并将结果存储到新的Set中
+     * 计算多个Set的并集，并将结果存储到新的Set中（默认过期时间1小时）
      * @param destKey 结果集合键
      * @param keys 待计算并集的集合键列表
      * @return 并集的元素数量
@@ -279,11 +301,16 @@ public class RedisSetUtil {
             return 0;
         }
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        return setOps.unionAndStore(keys, destKey);
+        Long result = setOps.unionAndStore(keys, destKey);
+        // 存储成功后设置过期时间
+        if (result != null && result > 0) {
+            redisTemplate.expire(destKey, DefaultExpireTime, TimeUnit.SECONDS);
+        }
+        return result != null ? result : 0;
     }
 
     /**
-     * 计算两个Set的并集，并将结果存储到新的Set中
+     * 计算两个Set的并集，并将结果存储到新的Set中（默认过期时间1小时）
      * @param destKey 结果集合键
      * @param key1 第一个集合键
      * @param key2 第二个集合键
@@ -291,7 +318,12 @@ public class RedisSetUtil {
      */
     public long unionAndStore(String destKey, String key1, String key2) {
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        return setOps.unionAndStore(key1, key2, destKey);
+        Long result = setOps.unionAndStore(key1, key2, destKey);
+        // 存储成功后设置过期时间
+        if (result != null && result > 0) {
+            redisTemplate.expire(destKey, DefaultExpireTime, TimeUnit.SECONDS);
+        }
+        return result != null ? result : 0;
     }
 
     /**
@@ -337,7 +369,7 @@ public class RedisSetUtil {
     }
 
     /**
-     * 计算多个Set的差集，并将结果存储到新的Set中
+     * 计算多个Set的差集，并将结果存储到新的Set中（默认过期时间1小时）
      * @param destKey 结果集合键
      * @param keys 待计算差集的集合键列表（第一个键为基准集合，其余为被减去的集合）
      * @return 差集的元素数量
@@ -347,11 +379,16 @@ public class RedisSetUtil {
             return 0;
         }
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        return setOps.differenceAndStore(keys, destKey);
+        Long result = setOps.differenceAndStore(keys, destKey);
+        // 存储成功后设置过期时间
+        if (result != null && result > 0) {
+            redisTemplate.expire(destKey, DefaultExpireTime, TimeUnit.SECONDS);
+        }
+        return result != null ? result : 0;
     }
 
     /**
-     * 计算两个Set的差集（key1 - key2），并将结果存储到新的Set中
+     * 计算两个Set的差集（key1 - key2），并将结果存储到新的Set中（默认过期时间1小时）
      * @param destKey 结果集合键
      * @param key1 基准集合键
      * @param key2 被减去的集合键
@@ -359,7 +396,12 @@ public class RedisSetUtil {
      */
     public long differenceAndStore(String destKey, String key1, String key2) {
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        return setOps.differenceAndStore(key1, key2, destKey);
+        Long result = setOps.differenceAndStore(key1, key2, destKey);
+        // 存储成功后设置过期时间
+        if (result != null && result > 0) {
+            redisTemplate.expire(destKey, DefaultExpireTime, TimeUnit.SECONDS);
+        }
+        return result != null ? result : 0;
     }
 
     /**

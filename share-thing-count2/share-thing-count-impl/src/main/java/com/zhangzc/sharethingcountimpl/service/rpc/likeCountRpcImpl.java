@@ -7,6 +7,7 @@ import com.zhangzc.redisspringbootstart.redisConst.RedisSetConst;
 import com.zhangzc.redisspringbootstart.utills.RedisSetUtil;
 import com.zhangzc.redisspringbootstart.utills.RedisUtil;
 import com.zhangzc.redisspringbootstart.utills.RedissonUtil;
+import com.zhangzc.sharethingcountapi.consts.RedisUserGetLikeCounts;
 import com.zhangzc.sharethingcountapi.pojo.dto.FsLikeDto;
 import com.zhangzc.sharethingcountapi.rpc.likeCount;
 import com.zhangzc.sharethingcountimpl.pojo.domain.FsLike;
@@ -135,5 +136,39 @@ public class likeCountRpcImpl implements likeCount {
         }).toList();
 
 
+    }
+
+    @Override
+    public Map<String, Double> getLikeCountByUserIds(List<String> userIds) {
+        //从redis里面查询
+        String redisUserGetLikeCounts = RedisUserGetLikeCounts.RedisUserGetLikeCounts;
+        List<String> needQuery = new ArrayList<>(userIds);
+        Map<String, Double> objectDoubleMap = redisUtil.batchZScore(redisUserGetLikeCounts, userIds);
+        objectDoubleMap.forEach((key, value) -> {
+            if (value != null) {
+                needQuery.remove(key);
+            } else {
+                objectDoubleMap.put(key, 0.0);
+            }
+        });
+        //需要查询
+        if (!needQuery.isEmpty()) {
+            //从数据库里面查询
+            //查询这些人被点赞
+            needQuery.forEach(authorId -> {
+                Long count = fsLikeServiceImpl.lambdaQuery()
+                        .eq(FsLike::getAuthorId, authorId)
+                        .eq(FsLike::getState, 1)
+                        .count();
+                objectDoubleMap.put(authorId, (double) count);
+            });
+
+            CompletableFuture.runAsync(() -> {
+                Map<Object, Double> collect = objectDoubleMap.entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                redisUtil.zAdd(redisUserGetLikeCounts, collect);
+            }, threadPoolTaskExecutor);
+        }
+        return objectDoubleMap;
     }
 }

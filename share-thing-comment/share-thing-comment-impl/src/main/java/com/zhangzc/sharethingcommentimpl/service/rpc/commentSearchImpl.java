@@ -58,10 +58,12 @@ public class commentSearchImpl implements CommentSearch {
 
     @Override
     public Map<String, Long> getCommentNumbers() {
-        List<FsComment> list = fsCommentService.lambdaQuery().list();
-        int size = list.size();
+        // 使用 COUNT 查询代替全表扫描，仅查询有效评论
+        Long count = fsCommentService.lambdaQuery()
+                .eq(FsComment::getIsDeleted, 0) // 只统计未删除的评论
+                .count();
         Map<String,Long> result = new HashMap<>();
-        result.put(articleCommentAndLike.commentNumbers, (long) size);
+        result.put(articleCommentAndLike.commentNumbers, count);
         return result;
     }
 }

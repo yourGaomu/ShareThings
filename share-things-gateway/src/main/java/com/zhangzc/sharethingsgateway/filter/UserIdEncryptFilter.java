@@ -42,7 +42,7 @@ public class UserIdEncryptFilter implements GlobalFilter, Ordered {
             try {
                 loginId = StpUtil.getLoginId();
             } catch (Exception e) {
-
+                    log.info("获取用户ID失败: {}", e.getMessage());
                 try {
                     loginId = GlobalContext.get();
                 } catch (Exception ex) {
@@ -53,6 +53,7 @@ public class UserIdEncryptFilter implements GlobalFilter, Ordered {
             long timestamp = System.currentTimeMillis();
 
             // 组合数据：userId|timestamp
+            System.out.println("==> loginId: " + loginId);
             String plainText = loginId + "|" + timestamp;
 
             // AES 加密并 Base64 编码

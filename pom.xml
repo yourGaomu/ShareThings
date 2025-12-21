@@ -21,6 +21,9 @@
         <module>share-things-admin</module>
         <module>share-thing-article</module>
         <module>share-thing-comment</module>
+        <module>share-thing-user</module>
+        <module>share-thing-count2</module>
+        <module>share-thing-front</module>
     </modules>
     <dependencies>
 

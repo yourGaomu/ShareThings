@@ -20,7 +20,7 @@
 
     <sql id="Base_Column_List">
         id,name,image,
-        jump_address,desc,state,
+        jump_address,`desc`,state,
         is_deleted,create_user,update_user,
         create_time,update_time
     </sql>

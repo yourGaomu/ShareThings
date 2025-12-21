@@ -1,7 +1,6 @@
 package com.zhangzc.sharethinguserimpl.controller;
 
 
-
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 
@@ -97,7 +96,9 @@ public class AuthController {
             throw new BusinessException(ResponseCodeEnum.LOGIN_CODE_ERROR);
         }
         // 4. 查询用户
-        FsUserInfo one = fsUserInfoService.lambdaQuery().eq(FsUserInfo::getPhone, phone).one();
+        FsUserInfo one = fsUserInfoService.lambdaQuery()
+                .eq(FsUserInfo::getPhone, phone)
+                .one();
         AtomicReference<Long> userId = new AtomicReference<>();
 
         // 5. 新用户注册（修复：事务逻辑+数据一致性+异常日志）
@@ -162,9 +163,19 @@ public class AuthController {
             }
         }
         StpUtil.login(userId.get());
+        //使用cannal去进行数据库的同步
         String tokenValue = StpUtil.getTokenValue();
         Map<String, String> map = new HashMap<>();
         map.put("token", tokenValue);
         return R.ok("登录成功", map);
     }
+
+
+
+    @PostMapping("/loginOut")
+    public R<String> loginOut() {
+        StpUtil.logout();
+        return R.ok("退出成功");
+    }
+
 }

@@ -25,4 +25,11 @@ public class OnlineUserUtil {
     public Long subOnlineCount(String userId) {
         return onlineUserCount.subOnlineCount(userId);
     }
+
+    public Long getOnlineCount() {
+        return onlineUserCount.getOnlineCount();
+    }
+
+
+
 }

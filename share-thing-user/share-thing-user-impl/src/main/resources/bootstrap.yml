@@ -36,6 +36,9 @@ spring:
           - data-id: share_filter.yaml
             group: filter
             refresh: true
+          - data-id: share_canal.yaml
+            group: canal
+            refresh: true
 
   config:
     import:

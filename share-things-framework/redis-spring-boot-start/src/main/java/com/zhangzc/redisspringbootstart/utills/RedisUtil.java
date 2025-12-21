@@ -12,15 +12,15 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtil {
 
 
-    private RedisTemplate<String, Object> redisTemplate;
     private final Long DefaultExpireTime = 3600L;
+    private RedisTemplate<String, Object> redisTemplate;
 
     public RedisUtil(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
 
-    public boolean delHash(String key ,List<String> items){
+    public boolean delHash(String key, List<String> items) {
         try {
             redisTemplate.opsForHash().delete(key, items.toArray());
             return true;
@@ -250,6 +250,24 @@ public class RedisUtil {
 
 
     /**
+     *
+     * @param key 键 不能为null
+     *
+     *
+     */
+    public Object hmget(String key, Object item) {
+        // 参数校验
+        if (key == null) {
+            throw new IllegalArgumentException("key不能为null");
+        }
+        if (item == null) {
+            throw new IllegalArgumentException("items集合不能为null且不能为空");
+        }
+        return redisTemplate.opsForHash().get(key, item);
+    }
+
+
+    /**
      * HashGet
      *
      * @param key  键 不能为null
@@ -275,6 +293,25 @@ public class RedisUtil {
      * @param key 键
      * @param map 对应多个键值
      */
+// 内部通用实现
+    public <V> boolean hmsetGeneric(String key, Map<String, V> map) {
+        try {
+            redisTemplate.opsForHash().putAll(key, map);
+            expire(key, DefaultExpireTime);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 在RedisUtil中新增重载方法
+    public boolean hset(String key, Map<String, String> map) {
+        // 利用HashMap的构造器自动转换类型（String是Object的子类）
+        return hmset(key, new HashMap<String, Object>(map));
+    }
+
+    // 原方法保留
     public boolean hmset(String key, Map<String, Object> map) {
         try {
             redisTemplate.opsForHash().putAll(key, map);
@@ -641,6 +678,315 @@ public class RedisUtil {
         try {
             Long remove = redisTemplate.opsForList().remove(key, count, value);
             return remove;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    // ===============================ZSet (Sorted Set)=================================
+
+    /**
+     * 向ZSet中添加元素（默认过期时间1小时）
+     *
+     * @param key   键
+     * @param value 元素值
+     * @param score 分数（用于排序）
+     * @return true成功 false失败
+     */
+    public boolean zAdd(String key, Object value, double score) {
+        try {
+            Boolean result = redisTemplate.opsForZSet().add(key, value, score);
+            expire(key, DefaultExpireTime);
+            return result != null && result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 向ZSet中批量添加元素（默认过期时间1小时）
+     *
+     * @param key    键
+     * @param values Map<元素, 分数>
+     * @return 成功添加的元素数量
+     */
+    public long zAdd(String key, Map<Object, Double> values) {
+        try {
+            if (values == null || values.isEmpty()) {
+                return 0;
+            }
+            // 转换为Spring需要的TypedTuple集合
+            Set<org.springframework.data.redis.core.ZSetOperations.TypedTuple<Object>> tuples = new HashSet<>();
+            values.forEach((v, s) -> tuples.add(
+                    org.springframework.data.redis.core.ZSetOperations.TypedTuple.of(v, s)
+            ));
+            Long result = redisTemplate.opsForZSet().add(key, tuples);
+            expire(key, DefaultExpireTime);
+            return result != null ? result : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 获取ZSet的大小
+     *
+     * @param key 键
+     * @return 元素数量
+     */
+    public long zCard(String key) {
+        try {
+            Long size = redisTemplate.opsForZSet().zCard(key);
+            return size != null ? size : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 批量获取ZSet中指定多个元素的score值
+     *
+     * @param key    键
+     * @param values 要获取的元素列表
+     * @return 元素与score的映射（不存在的元素不会出现在Map中）
+     */
+    public Map<String, Double> batchZScore(String key, List<String> values) {
+        Map<String, Double> scoreMap = new HashMap<>();
+        if (values == null || values.isEmpty()) {
+            return scoreMap;
+        }
+
+        try {
+            for (String value : values) {
+                Double score = zScore(key, value); // 调用你已有的zScore方法
+                scoreMap.put(value, score);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return scoreMap;
+    }
+
+
+    /**
+     * 获取ZSet中指定范围的元素（按score升序）
+     *
+     * @param key   键
+     * @param start 开始位置（0表示第一个）
+     * @param end   结束位置（-1表示最后一个）
+     * @return 元素集合
+     */
+    public Set<Object> zRange(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().range(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptySet();
+        }
+    }
+
+    /**
+     * 获取ZSet中指定范围的元素（按score降序）
+     *
+     * @param key   键
+     * @param start 开始位置（0表示第一个）
+     * @param end   结束位置（-1表示最后一个）
+     * @return 元素集合
+     */
+    public Set<Object> zReverseRange(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().reverseRange(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptySet();
+        }
+    }
+
+    /**
+     * 获取ZSet中指定范围的元素和score（按score升序）
+     *
+     * @param key   键
+     * @param start 开始位置
+     * @param end   结束位置
+     * @return 元素和score的集合
+     */
+    public Set<org.springframework.data.redis.core.ZSetOperations.TypedTuple<Object>> zRangeWithScores(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().rangeWithScores(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptySet();
+        }
+    }
+
+    /**
+     * 获取ZSet中指定范围的元素和score（按score降序）
+     *
+     * @param key   键
+     * @param start 开始位置
+     * @param end   结束位置
+     * @return 元素和score的集合
+     */
+    public Set<org.springframework.data.redis.core.ZSetOperations.TypedTuple<Object>> zReverseRangeWithScores(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().reverseRangeWithScores(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptySet();
+        }
+    }
+
+    /**
+     * 根据score范围获取ZSet中的元素
+     *
+     * @param key 键
+     * @param min 最小score
+     * @param max 最大score
+     * @return 元素集合
+     */
+    public Set<Object> zRangeByScore(String key, double min, double max) {
+        try {
+            return redisTemplate.opsForZSet().rangeByScore(key, min, max);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptySet();
+        }
+    }
+
+    /**
+     * 获取元素的score
+     *
+     * @param key   键
+     * @param value 元素值
+     * @return score，如果不存在返回null
+     */
+    public Double zScore(String key, Object value) {
+        try {
+            return redisTemplate.opsForZSet().score(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 获取元素的排名（按score升序，最小的是0）
+     *
+     * @param key   键
+     * @param value 元素值
+     * @return 排名，如果不存在返回null
+     */
+    public Long zRank(String key, Object value) {
+        try {
+            return redisTemplate.opsForZSet().rank(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 获取元素的排名（按score降序，最大的是0）
+     *
+     * @param key   键
+     * @param value 元素值
+     * @return 排名，如果不存在返回null
+     */
+    public Long zReverseRank(String key, Object value) {
+        try {
+            return redisTemplate.opsForZSet().reverseRank(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 从zSet中移除元素
+     *
+     * @param key    键
+     * @param values 元素值（可多个）
+     * @return 成功移除的元素数量
+     */
+    public long zRemove(String key, Object... values) {
+        try {
+            Long result = redisTemplate.opsForZSet().remove(key, values);
+            return result != null ? result : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 移除指定排名范围的元素
+     *
+     * @param key   键
+     * @param start 开始位置
+     * @param end   结束位置
+     * @return 成功移除的元素数量
+     */
+    public long zRemoveRange(String key, long start, long end) {
+        try {
+            Long result = redisTemplate.opsForZSet().removeRange(key, start, end);
+            return result != null ? result : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 移除指定score范围的元素
+     *
+     * @param key 键
+     * @param min 最小score
+     * @param max 最大score
+     * @return 成功移除的元素数量
+     */
+    public long zRemoveRangeByScore(String key, double min, double max) {
+        try {
+            Long result = redisTemplate.opsForZSet().removeRangeByScore(key, min, max);
+            return result != null ? result : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 增加元素的score
+     *
+     * @param key   键
+     * @param value 元素值
+     * @param delta 增加的score
+     * @return 增加后的score
+     */
+    public Double zIncrementScore(String key, Object value, double delta) {
+        try {
+            return redisTemplate.opsForZSet().incrementScore(key, value, delta);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 统计指定score范围内的元素数量
+     *
+     * @param key 键
+     * @param min 最小score
+     * @param max 最大score
+     * @return 元素数量
+     */
+    public long zCount(String key, double min, double max) {
+        try {
+            Long count = redisTemplate.opsForZSet().count(key, min, max);
+            return count != null ? count : 0;
         } catch (Exception e) {
             e.printStackTrace();
             return 0;

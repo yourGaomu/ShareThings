@@ -21,24 +21,27 @@ public class LuaUtil {
     }
 
 
-
     public Object execute(String luaPath, String Hashkey, List<Object> data) {
-        DefaultRedisScript<String> redisScript = new DefaultRedisScript();
+        DefaultRedisScript<String> redisScript = new DefaultRedisScript<>();
         String path = creatLuaPath(luaPath);
         log.info("==> lua路径: {}", path);
         redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource(path)));
         redisScript.setResultType(String.class);
         // 关键修正：List<Object> 转成 Object[]，传递给可变参数
-        Object[] args = data.toArray(new Object[0]);
-        log.info("==> 传递给 Lua 的 ARGV 参数：长度={}, 元素={}", args.length, Arrays.toString(args));
-        Object execute = redisTemplate.execute(redisScript, Collections.singletonList(Hashkey), args);
-        return  execute;
+        if (data != null) {
+            Object[] args = data.toArray(new Object[0]);
+            log.info("==> 传递给 Lua 的 ARGV 参数：长度={}, 元素={}", args.length, Arrays.toString(args));
+            Object execute = redisTemplate.execute(redisScript, Collections.singletonList(Hashkey), args);
+            return execute;
+        } else {
+            //data为空说明是获取数据
+            return redisTemplate.execute(redisScript, Collections.singletonList(Hashkey));
+        }
     }
 
 
-
-    private String creatLuaPath(String luaPath){
-        return  "/lua/"+luaPath+".lua";
+    private String creatLuaPath(String luaPath) {
+        return "/lua/" + luaPath + ".lua";
     }
 
 }

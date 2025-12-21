@@ -27,6 +27,13 @@ public class FsLike implements Serializable {
     @TableField(value = "article_id")
     private Integer articleId;
 
+
+    /**
+     * 作者id
+    * */
+    @TableField(value = "author_id")
+    private Long authorId;
+
     /**
      * 状态(0取消,1点赞)
      */

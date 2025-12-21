@@ -21,6 +21,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <dependencies>
+        <dependency>
+            <groupId>com.zhangzc</groupId>
+            <artifactId>sensitiveword-spring-boot-start</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <!-- Druid 数据库连接池 -->
         <dependency>
             <groupId>com.alibaba</groupId>

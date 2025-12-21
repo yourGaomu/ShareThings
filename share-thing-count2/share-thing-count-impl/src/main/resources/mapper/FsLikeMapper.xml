@@ -14,7 +14,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,article_id,state,
+        id,article_id,author_id,state,
         like_user,create_time,update_time
     </sql>
 </mapper>

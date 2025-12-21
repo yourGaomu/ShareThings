@@ -1,6 +1,7 @@
 package com.zhangzc.sharethingcountapi.pojo.dto;
 
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -30,6 +31,11 @@ public class FsLikeDto implements Serializable {
      */
 
     private Integer state;
+
+    /**
+     * 作者id
+     * */
+    private Long authorId;
 
     /**
      * 点赞用户id

@@ -17,10 +17,10 @@ public class onlineRedisUserCountImpl implements OnlineUserCount {
     private final RedisUtil redisUtil;
     private final RedissonUtil redissonUtil;
     private final LuaUtil luaUtil;
+    String redisUserCountKey = OnlineUserCountRedis.redisUserCountKey;
 
     @Override
     public Long addOnlineCount(String userID) {
-        String redisUserCountKey = OnlineUserCountRedis.redisUserCountKey;
         List<Object> data = List.of(userID, 300L, System.currentTimeMillis() / 1000);
         Object execute = luaUtil.execute("add_redis_online_user",
                 redisUserCountKey, data);
@@ -30,7 +30,6 @@ public class onlineRedisUserCountImpl implements OnlineUserCount {
 
     @Override
     public Long addOnlineCount(String userId, String userIp) {
-        String redisUserCountKey = OnlineUserCountRedis.redisUserCountKey;
         List<Object> data = List.of(userId, userIp,300L, System.currentTimeMillis() / 1000);
         Object execute = luaUtil.execute("add_redis_online_user_login",
                 redisUserCountKey, data);
@@ -39,9 +38,16 @@ public class onlineRedisUserCountImpl implements OnlineUserCount {
 
     @Override
     public Long subOnlineCount(String userID) {
-        String redisUserCountKey = OnlineUserCountRedis.redisUserCountKey;
         List<Object> data = List.of(userID);
         Object execute = luaUtil.execute("delete_redis_online_user", redisUserCountKey, data);
         return Long.parseLong(execute.toString());
+    }
+
+    @Override
+    public Long getOnlineCount() {
+        long now = System.currentTimeMillis() / 1000;
+        List<Object> data = List.of(now);
+        Object execute = luaUtil.execute("get_redis_online_user", redisUserCountKey, data);
+        return Long.valueOf(execute.toString());
     }
 }

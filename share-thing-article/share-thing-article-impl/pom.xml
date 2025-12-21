@@ -22,6 +22,19 @@
     <packaging>jar</packaging>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.zhangzc</groupId>
+            <artifactId>listener-spring-boot-start</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>com.zhangzc</groupId>
             <artifactId>share-thing-count-api</artifactId>

@@ -19,10 +19,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -43,6 +45,11 @@ public class JacksonConfig {
 
         // 设置时区
         objectMapper.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+
+        // 配置Date类型的日期格式(支持时间戳和字符串格式)
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        objectMapper.setDateFormat(dateFormat);
 
         // JavaTimeModule 用于指定序列化和反序列化规则
         JavaTimeModule javaTimeModule = new JavaTimeModule();

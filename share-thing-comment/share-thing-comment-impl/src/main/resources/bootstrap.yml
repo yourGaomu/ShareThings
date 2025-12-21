@@ -21,6 +21,9 @@ spring:
           - data-id: redis.yaml
             group: redis
             refresh: true
+          - data-id: share_sentiveWord.yaml
+            group: sentiveWord
+            refresh: true
   config:
     import:
       - optional:nacos:${spring.application.name}.yaml?group=DEFAULT_GROUP&namespace=0d275001-e548-47ce-b78e-23dbf9fd060c&username=nacos&password=nacos
