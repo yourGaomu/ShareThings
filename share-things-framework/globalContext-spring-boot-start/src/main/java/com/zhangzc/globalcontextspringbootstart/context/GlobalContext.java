@@ -11,6 +11,7 @@ import java.util.Map;
 @Data
 public class GlobalContext {
     private static String defaultKey = "defaultKey";
+    private static String encodeKey = "encodeKey";
     // 初始化一个 ThreadLocal 变量
     private static final ThreadLocal<Map<String, Object>> LOGIN_USER_CONTEXT_THREAD_LOCAL
             = TransmittableThreadLocal.withInitial(HashMap::new);
@@ -18,6 +19,10 @@ public class GlobalContext {
 
     public static void set(Object value) {
         LOGIN_USER_CONTEXT_THREAD_LOCAL.get().put(defaultKey, value);
+    }
+
+    public static void setEncoded(String value) {
+        LOGIN_USER_CONTEXT_THREAD_LOCAL.get().put(encodeKey, value);
     }
 
     public static void set(String key, Object value) {
@@ -30,6 +35,10 @@ public class GlobalContext {
 
     public static Object get() {
         return LOGIN_USER_CONTEXT_THREAD_LOCAL.get().get(defaultKey);
+    }
+
+    public static String getEncoded() {
+        return (String) LOGIN_USER_CONTEXT_THREAD_LOCAL.get().get(encodeKey);
     }
 
     public static void remove() {

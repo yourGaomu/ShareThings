@@ -4,6 +4,7 @@ package com.zhangzc.sharethinguserimpl.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 
+import com.zhangzc.globalcontextspringbootstart.utils.EncodeUtil;
 import com.zhangzc.sharethingscommon.exception.BusinessException;
 
 import com.zhangzc.fakebookspringbootstartjackon.Utils.JsonUtils;
@@ -51,6 +52,7 @@ public class AuthController {
     private final TransactionTemplate transactionTemplate;
     private final SegmentService segmentService;
     private final FsUserLevelService fsUserLevelService;
+    private final EncodeUtil encodeUtil;
 
 
     @PostMapping("/send-code")
@@ -77,7 +79,7 @@ public class AuthController {
 
 
     @PostMapping("/phone-login")
-    public R login(@RequestBody AuthLoginVo authLoginVo) {
+    public R login(@RequestBody AuthLoginVo authLoginVo) throws Exception {
         // 1. 手机号校验（修复：补充格式校验+拼写错误）
         if (StrUtil.isBlank(authLoginVo.getPhone()) || !PHONE_PATTERN.matcher(authLoginVo.getPhone()).matches()) {
             throw new BusinessException(ResponseCodeEnum.BAD_REQUEST);
@@ -162,15 +164,17 @@ public class AuthController {
                 throw new BusinessException(ResponseCodeEnum.SYSTEM_ERROR);
             }
         }
+        //加密用户的id
+        String encodeUserId = encodeUtil.encryptRaw(String.valueOf(userId));
         StpUtil.login(userId.get());
         //使用cannal去进行数据库的同步
         String tokenValue = StpUtil.getTokenValue();
         Map<String, String> map = new HashMap<>();
         map.put("token", tokenValue);
+        map.put("encodedUserId", encodeUserId);
+        System.out.println(map);
         return R.ok("登录成功", map);
     }
-
-
 
     @PostMapping("/loginOut")
     public R<String> loginOut() {

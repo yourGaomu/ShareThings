@@ -2,6 +2,8 @@ package com.zhangzc.sharethinguserimpl.service.impl;
 
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhangzc.sharethingscommon.pojo.dto.SlideshowDTO;
 import com.zhangzc.sharethingscommon.utils.R;
 import com.zhangzc.sharethinguserimpl.pojo.domain.FsSlideshow;

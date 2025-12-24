@@ -2,6 +2,7 @@ package com.zhangzc.globalcontextspringbootstart.config;
 
 import com.zhangzc.globalcontextspringbootstart.context.GlobalContext;
 import com.zhangzc.globalcontextspringbootstart.properties.GlobalContextFilter;
+import com.zhangzc.globalcontextspringbootstart.utils.EncodeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -21,5 +22,10 @@ public class ContextConfig {
     @Bean
     public GlobalContext globalContext(){
         return new GlobalContext();
+    }
+
+    @Bean
+    public EncodeUtil encodeUtil(){
+        return new EncodeUtil();
     }
 }

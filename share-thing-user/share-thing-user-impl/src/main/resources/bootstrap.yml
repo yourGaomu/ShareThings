@@ -15,6 +15,12 @@ spring:
         password: nacos
         file-extension: yaml
         shared-configs: # 共享配置
+          - data-id: share_security.yaml
+            group: security
+            refresh: true
+          - data-id: share_satoken.yaml
+            group: satoken
+            refresh: true
           - data-id: share_user.yaml
             group: mysql
             refresh: true
@@ -26,9 +32,6 @@ spring:
             refresh: true
           - data-id: share_sms.yaml
             group: sms
-            refresh: true
-          - data-id: share_satoken.yaml
-            group: satoken
             refresh: true
           - data-id: share_security.yaml
             group: security
