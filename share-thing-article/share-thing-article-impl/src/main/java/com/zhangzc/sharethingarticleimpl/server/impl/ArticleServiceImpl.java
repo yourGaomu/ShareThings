@@ -183,6 +183,9 @@ public class ArticleServiceImpl implements ArticleService {
                         records.forEach(fsArticle -> {
                             ArticleDTO articleDTO = new ArticleDTO();
                             BeanUtils.copyProperties(fsArticle, articleDTO);
+                            //给时间赋值
+                            articleDTO.setCreateTime(TimeUtil.getLocalDateTime(fsArticle.getCreateTime()));
+                            articleDTO.setUpdateTime(TimeUtil.getLocalDateTime(fsArticle.getUpdateTime()));
                             //markdonw ,html, labelDTOS,ArticleCountDTo,picture,level
                             result.add(articleDTO);
                         });

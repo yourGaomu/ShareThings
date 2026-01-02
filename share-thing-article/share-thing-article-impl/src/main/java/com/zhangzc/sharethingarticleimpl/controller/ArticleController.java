@@ -1,6 +1,7 @@
 package com.zhangzc.sharethingarticleimpl.controller;
 
 
+import com.zhangzc.miniospringbootstart.utills.MinioUtil;
 import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
 import com.zhangzc.sharethingarticleimpl.interfaces.GetArticleInfodAddPV;
 import com.zhangzc.sharethingarticleimpl.pojo.mongoDomain.MgArticle;
@@ -15,28 +16,44 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/bbs/article/")
 @RequiredArgsConstructor
+
 public class ArticleController {
     private final MongoUtil mongoUtil;
-
+    private final MinioUtil minioUtil;
     private final ArticleService articleService;
+
+    /**
+     * 上传图片
+     *
+     * @param picture
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/uploadPicture")
+    public R<String> uploadPicture(@RequestParam(value = "file", required = false) MultipartFile picture) throws Exception {
+        return R.ok("成功", minioUtil.uploadFile(picture));
+    }
 
     @PostMapping("/create")
     public R<Boolean> create(@RequestParam(value = "file", required = false) MultipartFile picture,
-                             ArticleDTO articleDTO, @RequestParam List<Integer> labelIds) throws IOException {
+                             @RequestBody ArticleDTO articleDTO,
+                             @RequestBody List<Integer> labelIds) {
         articleService.create(picture, articleDTO, labelIds);
         return R.ok();
     }
 
     @PostMapping("getList")
-    public R<PageResponse<ArticleDTO>> getList(@RequestBody ArticleSearchDTO articleSearchDTO){
-        PageResponse<ArticleDTO> result =  articleService.getList(articleSearchDTO);
+    public R<PageResponse<ArticleDTO>> getList(@RequestBody ArticleSearchDTO articleSearchDTO) {
+        PageResponse<ArticleDTO> result = articleService.getList(articleSearchDTO);
         return R.ok(result);
     }
 
@@ -81,24 +98,24 @@ public class ArticleController {
     @PostMapping("/getPersonalArticles")
     public R<PageResponse<ArticleDTO>> getPersonalArticles(@RequestBody ArticleSearchDTO articleSearchDTO
             , @RequestBody(required = false) ArticleStateEnum articleStateEnum) {
-        PageResponse<ArticleDTO> result = articleService.getPersonalArticles(articleSearchDTO,articleStateEnum);
+        PageResponse<ArticleDTO> result = articleService.getPersonalArticles(articleSearchDTO, articleStateEnum);
         return R.ok(result);
     }
 
     @PostMapping("/test")
-    public void text(){
+    public void text() {
         Query query = new Query();
         // ✅ 使用Integer类型,与MongoDB字段类型一致
         List<Integer> articleIds = List.of(28);
         query.addCriteria(Criteria.where("articleId").in(articleIds));
-        
+
         // 打印查询条件
         System.out.println("查询条件: " + query);
-        
+
         List<MgArticle> bbsArticleMarkdownInfo = mongoUtil.find(query, MgArticle.class, "bbs_article_markdown_info");
         System.out.println("查询结果数量: " + bbsArticleMarkdownInfo.size());
         System.out.println("查询结果: " + bbsArticleMarkdownInfo);
-        
+
         // 查看所有数据用于调试
         Query allQuery = new Query();
         List<MgArticle> allData = mongoUtil.find(allQuery, MgArticle.class, "bbs_article_markdown_info");

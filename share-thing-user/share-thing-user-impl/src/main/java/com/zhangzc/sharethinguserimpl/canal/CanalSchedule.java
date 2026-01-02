@@ -8,6 +8,7 @@ import com.alibaba.otter.canal.protocol.Message;
 import com.google.common.collect.Maps;
 import com.zhangzc.sharethingscommon.exception.BusinessException;
 import com.zhangzc.sharethinguserimpl.Enum.ResponseCodeEnum;
+import com.zhangzc.sharethinguserimpl.canal.tablesHandle.ArticleHandle;
 import com.zhangzc.sharethinguserimpl.canal.vo.ValueAndFlagVo;
 import com.zhangzc.sharethinguserimpl.pojo.domain.FsUserRole;
 import com.zhangzc.sharethinguserimpl.service.FsUserRoleService;
@@ -33,10 +34,11 @@ public class CanalSchedule implements Runnable {
     private final CanalProperties canalProperties;
     private final CanalConnector canalConnector;
     private final TransactionTemplate transactionTemplate;
+    private final ArticleHandle articleHandle;
 
 
     @Override
-    @Scheduled(fixedDelay = 100) // 每隔 100ms 被执行一次
+    @Scheduled(fixedDelay = 1000) // 每隔 1000ms 被执行一次
     public void run() {
         // 初始化批次 ID，-1 表示未开始或未获取到数据
         long batchId = -1;
@@ -143,12 +145,63 @@ public class CanalSchedule implements Runnable {
      */
     private void processEvent(Map<String, ValueAndFlagVo> columnMap, String table, CanalEntry.EventType eventType) throws Exception {
         switch (table) {
-            //用户表事件
+            //用户表事件——》新用户的加入或者老用户的注销
             case "fs_user_info" -> handleUserEvent(columnMap, eventType);
+            //点赞表事件-》用户点赞或者取消点赞
+            case "fs_like" -> handleLikeEvent(columnMap, eventType);
+            //评论点赞表事件-》用户点赞或者取消点赞
+            case "fs_comment_like" -> handleCommentLikeEvent(columnMap, eventType);
+            //用户发表作品->有可能是添加作品有可能是删除
+            case "fs_article" -> handleArticleEvent(columnMap, eventType);
             default -> log.warn("Table: {} not support", table);
         }
     }
 
+    /**
+     * 用户作品表
+     *
+     */
+    private void handleArticleEvent(Map<String, ValueAndFlagVo> columnMap, CanalEntry.EventType eventType) {
+        switch (eventType) {
+            case INSERT: {
+                //用户发布新作品
+                articleHandle.addArticleByUser();
+                break;
+            }
+            case DELETE: {
+                articleHandle.deleteArticleByUser();
+                break;
+            }
+            case UPDATE: {
+                articleHandle.updateArticleByUser();
+                break;
+            }
+            // default 分支：处理不支持的操作类型
+            default:
+                log.warn("Table: author_heat_behavior not support event type: {}", eventType);
+                break;
+        }
+
+    }
+
+    /**
+     * 评论点赞表事件
+     *
+     */
+    private void handleCommentLikeEvent(Map<String, ValueAndFlagVo> columnMap, CanalEntry.EventType eventType) {
+    }
+
+    /**
+     * 点赞表事件
+     *
+     */
+    private void handleLikeEvent(Map<String, ValueAndFlagVo> columnMap, CanalEntry.EventType eventType) {
+    }
+
+    /**
+     * 用户表事件
+     *
+     */
     private void handleUserEvent(Map<String, ValueAndFlagVo> columnMap, CanalEntry.EventType eventType) {
         if (eventType == CanalEntry.EventType.INSERT) {
             Boolean execute = transactionTemplate.execute(status -> {

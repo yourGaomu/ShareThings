@@ -1,7 +1,8 @@
-servlet:
-  multipart:
-    max-file-size: 10MB # 限制单个上传文件的最大大小为 10MB。如果上传的文件大小超过这个值，将会被拒绝上传。
-    max-request-size: 10MB # 限制整个上传请求的最大大小为 10MB。这包括所有上传文件的大小之和。如果请求总大小超过这个值，将会被拒绝。
-
-
-
+# 文件上传配置
+spring:
+  servlet:
+    multipart:
+      enabled: true # 开启文件上传支持（默认已开启）
+      max-file-size: 10MB # 单个文件最大上传大小（可自定义，如50MB、1GB）
+      max-request-size: 100MB # 单次请求（多文件上传）的总大小最大值
+      file-size-threshold: 2MB # 文件大小超过该值时，会临时写入磁盘（默认0，即所有文件都临时写入磁盘）

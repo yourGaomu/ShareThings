@@ -293,9 +293,29 @@ class UserServiceImpl(
         val actualTotal = minOf(redisTotal, RANK_TOP_LIMIT.toLong()) // 实际有效数据量（最多100）
         // 超出前100名范围，直接返回后10名
         if (start >= actualTotal) {
-            val resultUserIds = emptyList<Long>()
-            //todo
+
             val zReverseRange = redisUtil.zReverseRange(redisKey, actualTotal - 10, actualTotal - 1)
+                .filter { it != null }
+                .takeIf { it.isNotEmpty() }
+                ?: run {
+                    //榜单没有任何数据，返回空参
+                    return PageResponse.success(emptyList(), currentPage.toLong(), 0)
+                }
+            //序列化
+            try {
+                val toList = JsonUtils.parseObject(
+                    JsonUtils.toJsonString(zReverseRange),
+                    object : TypeReference<List<String>>() {})
+                    .map {
+                        val userInfo = getUserInfo(it)
+                        userInfo
+                    }.toList()
+                return PageResponse.success(toList, currentPage.toLong(), actualTotal)
+            } catch (e: Exception) {
+                println("序列化失败 ${e.message}")
+                return PageResponse.success(emptyList(), currentPage.toLong(), 0)
+            }
+
         }
         // 调用 Redis 工具类获取分页数据（倒序取）
         val rankUserIds = redisUtil.zReverseRange(redisKey, start, end)
@@ -312,7 +332,7 @@ class UserServiceImpl(
                         JsonUtils.parseList(JsonUtils.toJsonString(it), object : TypeReference<List<Long>>() {})
                     userIds
                 } catch (e: Exception) {
-                    println("转换失败了")
+                    println("序列化失败 ${e.message}")
                     null
                 }
             }
@@ -334,13 +354,14 @@ class UserServiceImpl(
                         //去数据库查询月榜单
                         makeHotAuthorsMonthYear()
                     }
+
                     else -> {
                         throw BusinessException(ResponseCodeEnum.RANK_ERROR)
                     }
                 }
             }
 
-        if (rankUserIds.isEmpty()) {
+        if (rankUserIds == null || rankUserIds.isEmpty()) {
             //这个排行榜还没有人
             return PageResponse.success(emptyList(), currentPage.toLong(), 0)
         }
