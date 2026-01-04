@@ -139,14 +139,15 @@ public class RedisUtil {
      * @param key 可以传一个值 或多个
      */
     @SuppressWarnings("unchecked")
-    public void del(String... key) {
+    public Object del(String... key) {
         if (key != null && key.length > 0) {
             if (key.length == 1) {
-                redisTemplate.delete(key[0]);
+                return redisTemplate.delete(key[0]);
             } else {
-                redisTemplate.delete(Arrays.asList(key));
+                return redisTemplate.delete(Arrays.asList(key));
             }
         }
+        return null;
     }
 
     // ============================String=============================

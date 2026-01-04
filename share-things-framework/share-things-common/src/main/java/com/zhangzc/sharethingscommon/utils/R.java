@@ -48,4 +48,12 @@ public class R<T> {
         r.setDesc(responseCodeEnum.getMeg());
         return r;
     }
+    public static <T> R<T> error(String message) {
+        R<T> r = new R<>();
+        r.setCode("500");
+        r.setDesc(message);
+        return r;
+    }
+
+
 }

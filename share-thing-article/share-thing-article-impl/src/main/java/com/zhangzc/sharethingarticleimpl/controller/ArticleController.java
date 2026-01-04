@@ -38,6 +38,8 @@ public class ArticleController {
      * @return
      * @throws Exception
      */
+
+
     @PostMapping("/uploadPicture")
     public R<String> uploadPicture(@RequestParam(value = "file", required = false) MultipartFile picture) throws Exception {
         return R.ok("成功", minioUtil.uploadFile(picture));

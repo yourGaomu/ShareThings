@@ -127,6 +127,7 @@ public class ArticleServiceImpl implements ArticleService {
                 mgArticle.setArticleMarkdown(articleDTO.getMarkdown());
                 mgArticle.setUserId(Long.valueOf(userId));
                 mongoUtil.insert(mgArticle, "bbs_article_markdown_info");
+                //计入Es数据库
                 //保存进入标签数据库
                 fsArticleLabelService.saveBatchByArticleIdAndLabelIds(fsArticle.getId(), labelIds, userId);
                 return true;
