@@ -6,6 +6,7 @@ import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
 import com.zhangzc.sharethingarticleimpl.interfaces.GetArticleInfodAddPV;
 import com.zhangzc.sharethingarticleimpl.pojo.mongoDomain.MgArticle;
 import com.zhangzc.sharethingarticleimpl.pojo.req.GetArticleInfoVo;
+import com.zhangzc.sharethingarticleimpl.pojo.req.LikeSearchVo;
 import com.zhangzc.sharethingarticleimpl.server.ArticleService;
 import com.zhangzc.sharethingscommon.enums.ArticleStateEnum;
 import com.zhangzc.sharethingscommon.pojo.dto.*;
@@ -86,8 +87,8 @@ public class ArticleController {
 
 
     @PostMapping("getLikesArticle")
-    public R<PageResponse<ArticleDTO>> getLikesArticle(LikeSearchDTO likeSearchDTO) throws ExecutionException, InterruptedException {
-        PageResponse<ArticleDTO> result = articleService.getLikesArticle(likeSearchDTO);
+    public R<PageResponse<ArticleDTO>> getLikesArticle(@RequestBody LikeSearchVo likeSearchVo) throws ExecutionException, InterruptedException {
+        PageResponse<ArticleDTO> result = articleService.getLikesArticle(likeSearchVo);
         return R.ok(result);
     }
 

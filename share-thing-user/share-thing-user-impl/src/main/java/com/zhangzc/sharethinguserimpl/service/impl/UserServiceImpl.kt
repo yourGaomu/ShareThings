@@ -236,7 +236,7 @@ class UserServiceImpl(
             }
             userInfo
         }
-        result.id = userInfo.userId.toLong()
+
         result.name = userInfo.nickname
         result.gender = userInfo.sex
         result.intro = userInfo.introduction
@@ -244,6 +244,7 @@ class UserServiceImpl(
         result.createTime = TimeUtil.getLocalDateTime(userInfo.createTime)
         result.updateTime = TimeUtil.getLocalDateTime(userInfo.updateTime)
         BeanUtils.copyProperties(userInfo, result)
+        result.id = userInfo.userId.toLong()
         //查询用户的被点赞数量
         likeCountImpl.getLikeCountByUserIds(listOf(userId)).forEach { (_, v) ->
             result.likeCount = v.toLong()

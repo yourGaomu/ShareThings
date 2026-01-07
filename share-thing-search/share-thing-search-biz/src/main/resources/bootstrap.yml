@@ -1,3 +1,4 @@
+
 spring:
   application:
     name: share-thing-search-impl
@@ -15,6 +16,9 @@ spring:
         password: nacos
         file-extension: yaml
         shared-configs: # 共享配置
+          - data-id: share_filter.yaml
+            group: filter
+            refresh: true
           - data-id: redis.yaml
             group: redis
             refresh: true
@@ -42,4 +46,5 @@ dubbo:
       username: nacos
       password: nacos
     register-mode: instance
-
+server:
+  port: 9208

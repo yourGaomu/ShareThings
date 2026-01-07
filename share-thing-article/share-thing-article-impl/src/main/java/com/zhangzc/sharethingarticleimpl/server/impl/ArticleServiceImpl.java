@@ -18,6 +18,7 @@ import com.zhangzc.sharethingarticleimpl.pojo.domain.FsArticleLabel;
 import com.zhangzc.sharethingarticleimpl.pojo.domain.FsLabel;
 import com.zhangzc.sharethingarticleimpl.pojo.mongoDomain.MgArticle;
 import com.zhangzc.sharethingarticleimpl.pojo.req.GetArticleInfoVo;
+import com.zhangzc.sharethingarticleimpl.pojo.req.LikeSearchVo;
 import com.zhangzc.sharethingarticleimpl.server.ArticleService;
 import com.zhangzc.sharethingarticleimpl.server.FsArticleLabelService;
 import com.zhangzc.sharethingarticleimpl.server.FsArticleService;
@@ -435,22 +436,18 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public PageResponse<ArticleDTO> getLikesArticle(LikeSearchDTO likeSearchDTO) throws ExecutionException, InterruptedException {
+    public PageResponse<ArticleDTO> getLikesArticle(LikeSearchVo likeSearchVo) throws ExecutionException, InterruptedException {
         String userID = GlobalContext.get().toString();
-        if (likeSearchDTO.getLikeUser() == null) {
+        if (likeSearchVo.getLikeUser() == null) {
             throw new BusinessException(ResponseCodeEnum.BAD_REQUEST);
         }
-        //获取文章id
-        Integer articleId = likeSearchDTO.getArticleId();
-        if (articleId != null) {
-            //todo
-        }
+
         //获取当前的页数
-        Integer currentPage = likeSearchDTO.getCurrentPage();
+        Integer currentPage = likeSearchVo.getCurrentPage();
         //获取每页的数量
-        Integer pageSize = likeSearchDTO.getPageSize();
+        Integer pageSize = likeSearchVo.getPageSize();
         List<FsLikeDto> likeCountByLikeUser = likeCount
-                .getLikeCountByLikeUser(currentPage, pageSize, likeSearchDTO.getLikeUser());
+                .getLikeCountByLikeUser(currentPage, pageSize, likeSearchVo.getLikeUser());
         //用户没有点赞任何文章
         if (likeCountByLikeUser.isEmpty()) {
             return PageResponse.success(Collections.emptyList(), currentPage, 0);

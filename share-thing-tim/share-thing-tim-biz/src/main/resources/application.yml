@@ -1,0 +1,108 @@
+# ==================== Kafka配置 ====================
+zhang:
+  kafka:
+    # Kafka服务器地址，多个用逗号分隔
+    bootstrap-servers: 45.192.106.45:9094
+    # 生产者配置
+    producer:
+      # 消息确认机制：all-等待所有副本确认（最安全），1-等待leader确认，0-不等待确认（最快）
+      acks: all
+      # 发送失败重试次数
+      retries: 3
+      # 批量发送大小（字节），16KB
+      batch-size: 16384
+      # 生产者缓冲区大小（字节），32MB
+      buffer-memory: 33554432
+      # Key序列化器
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # Value序列化器
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # 压缩类型：none-不压缩, gzip, snappy, lz4, zstd
+      compression-type: none
+      # 批量发送延迟时间（毫秒），为了提高吞吐量可以适当增加
+      linger-ms: 1
+    # 消费者配置
+    consumer:
+      # 消费者组ID，同一个组内的消费者共同消费topic的消息
+      group-id: share_thing-tim
+      # 是否自动提交偏移量
+      enable-auto-commit: false
+      # 手动应答模式：manual-手动确认，batch-批量确认，record-逐条确认
+      ack-mode: manual
+      # 自动提交间隔（毫秒）
+      auto-commit-interval-ms: 1000
+      # 会话超时时间（毫秒），超过此时间没有心跳会被踢出消费者组
+      session-timeout-ms: 30000
+      # 单次拉取最大记录数
+      max-poll-records: 500
+      # Key反序列化器
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # Value反序列化器
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # 偏移量重置策略：latest-从最新消息开始，earliest-从最早消息开始
+      auto-offset-reset: latest
+      # 心跳间隔（毫秒）
+      heartbeat-interval-ms: 3000
+
+# Redis 核心配置（包含 Spring Redis + Redisson 配置）
+spring:
+  data:
+    redis:
+      # 数据库索引（0-15）
+      database: 6
+      # Redis 服务器地址
+      host: 47.108.58.72
+      # Redis 端口
+      port: 6379
+      # 密码
+      password: zhangzc123
+      # 连接超时时间（毫秒）
+      timeout: 5000
+      # 连接建立超时时间（毫秒）
+      connect-timeout: 5000
+      # Lettuce 连接池配置
+      lettuce:
+        pool:
+          # 最大活跃连接数（负值表示无限制）
+          max-active: 200
+          # 最大阻塞等待时间（负值表示无限制）
+          max-wait: -1ms
+          # 最小空闲连接数
+          min-idle: 0
+          # 最大空闲连接数
+          max-idle: 10
+
+# Redisson 分布式锁/客户端配置（顶级节点）
+redisson:
+  enable-default-beans: false
+  singleServerConfig:
+    # 连接空闲超时时间（毫秒）
+    idleConnectionTimeout: 10000
+    # 连接超时时间（与 Spring Redis 保持一致）
+    connectTimeout: 5000
+    # 命令执行超时时间（毫秒）
+    timeout: 5000
+    # 重试次数
+    retryAttempts: 3
+    # 重试间隔时间（毫秒）
+    retryInterval: 1500
+    # Redis 密码（与 Spring Redis 保持一致）
+    password: zhangzc123
+    # 单个连接最大订阅数
+    subscriptionsPerConnection: 5
+    # Redis 地址（格式：redis://IP:端口）
+    address: redis://47.108.58.72:6379
+    # 订阅连接最小空闲数
+    subscriptionConnectionMinimumIdleSize: 1
+    # 订阅连接池大小
+    subscriptionConnectionPoolSize: 50
+    # 普通连接最小空闲数
+    connectionMinimumIdleSize: 32
+    # 普通连接池大小
+    connectionPoolSize: 64
+    # Redisson 使用的 Redis 数据库索引（建议与 Spring Redis 一致）
+    database: 6
+    # DNS 监测间隔（毫秒）
+    dnsMonitoringInterval: 5000
+  # 传输模式（NIO/EPoll，EPoll 仅支持 Linux）
+  transportMode: NIO

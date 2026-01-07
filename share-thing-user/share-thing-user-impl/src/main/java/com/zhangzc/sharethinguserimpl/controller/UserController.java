@@ -9,11 +9,13 @@ import com.zhangzc.sharethinguserimpl.pojo.vo.UserRightsDTO;
 import com.zhangzc.sharethinguserimpl.pojo.vo.UserSearchDTO;
 import com.zhangzc.sharethinguserimpl.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/bbs/user/")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
     private final UserService userService;
     private final EncodeUtil encodeUtil;
@@ -27,7 +29,7 @@ public class UserController {
 
     @PostMapping("getHotAuthorsList")
     public R<PageResponse<UserForumDTO>> getHotAuthorsList(UserSearchDTO userSearchDTO) {
-        PageResponse<UserForumDTO> result =   userService.getHotAuthorsList(userSearchDTO);
+        PageResponse<UserForumDTO> result = userService.getHotAuthorsList(userSearchDTO);
         return R.ok(result);
     }
 
@@ -39,11 +41,18 @@ public class UserController {
             throw new IllegalArgumentException("加密的userId不能为空");
         }
 
-        String userid = encodeUtil.decryptRaw(userIdRequest.getUserId());
+        String userid;
+        try {
+            userid = encodeUtil.decryptRaw(userIdRequest.getUserId());
+        } catch (Exception e) {
+            log.info("携带的是未加密的用户Id");
+            userid = userIdRequest.getUserId();
+        }
+
         if (userid == null) {
             throw new RuntimeException("用户不存在或userId已过期");
         }
-        
+
         UserForumDTO result = userService.getUserInfo(userid);
         return R.ok(result);
     }
