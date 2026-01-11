@@ -8,6 +8,7 @@ import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,15 @@ public class KafkaUtills {
         }
     }
 
+
+    /**
+    * 发送带有key的消息
+    * */
+    public boolean sendSimpleMapMessage(String topic, Map<String, Object> message) {
+        return sendTransactionMessage(topic, message);
+    }
+
+
     /**
      * 发送普通消息（异步）- 带Key
      * <p>相同Key的消息会被发送到同一个分区</p>
@@ -77,9 +87,9 @@ public class KafkaUtills {
     /**
      * 发送消息（同步）- 自定义超时时间
      *
-     * @param topic      主题名称
-     * @param message    消息对象
-     * @param timeoutMs  超时时间（毫秒）
+     * @param topic     主题名称
+     * @param message   消息对象
+     * @param timeoutMs 超时时间（毫秒）
      * @return 是否发送成功
      */
     public boolean sendMessageSync(String topic, Object message, long timeoutMs) {
@@ -129,6 +139,28 @@ public class KafkaUtills {
                 }
             });
             return result != null && result;
+        } catch (Exception e) {
+            log.error("事务执行失败 | Topic: {} | Message: {}", topic, message, e);
+            return false;
+        }
+    }
+
+    public boolean sendTransactionMessage(String topic, Map<String, Object> message) {
+        try {
+            message.forEach((k, v) -> {
+                kafkaTemplate.executeInTransaction(new KafkaOperations.OperationsCallback<String, String, Boolean>() {
+                    @Override
+                    public Boolean doInOperations(KafkaOperations<String, String> kafkaOperations) {
+                        try {
+                            kafkaOperations.send(topic, k, Object2String(v));
+                            return true;
+                        } catch (Exception e) {
+                            throw new RuntimeException("发送消息失败，事务将回滚", e);
+                        }
+                    }
+                });
+            });
+            return true;
         } catch (Exception e) {
             log.error("事务执行失败 | Topic: {} | Message: {}", topic, message, e);
             return false;

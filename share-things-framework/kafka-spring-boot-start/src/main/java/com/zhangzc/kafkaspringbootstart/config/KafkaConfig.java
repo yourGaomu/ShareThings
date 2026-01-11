@@ -1,8 +1,13 @@
 package com.zhangzc.kafkaspringbootstart.config;
 
 
+import com.zhangzc.kafkaspringbootstart.core.service.KafkaRecordService;
 import com.zhangzc.kafkaspringbootstart.listener.ProduceListenerImpl;
+import com.zhangzc.kafkaspringbootstart.service.StoreKafkaRecord;
+import com.zhangzc.kafkaspringbootstart.service.impl.KafkaConsumeRecordByMongo;
+import com.zhangzc.kafkaspringbootstart.service.impl.KafkaConsumeRecordByMysql;
 import com.zhangzc.kafkaspringbootstart.utills.KafkaUtills;
+import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -89,12 +94,29 @@ public class KafkaConfig {
      * @param producerFactory 生产者工厂
      * @return KafkaTemplate实例
      */
+
+    /**
+     * 反向实列化数据存储对象
+     *
+     */
+    @Bean
+    @ConditionalOnProperty(prefix = "zhang.kafka", name = "enable_mysql", havingValue = "true")
+    public StoreKafkaRecord storeKafkaRecord(KafkaRecordService kafkaRecordService) {
+        return new KafkaConsumeRecordByMysql(kafkaRecordService);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "zhang.kafka", name = "enable_mongo", havingValue = "true")
+    public StoreKafkaRecord storeKafkaRecord2(MongoUtil mongoUtil) {
+        return new KafkaConsumeRecordByMongo(mongoUtil);
+    }
+
     @Bean
     @ConditionalOnProperty(prefix = "zhang.kafka", name = "bootstrap-servers")
-    public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
+    public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory, StoreKafkaRecord storeKafkaRecord) {
         KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(producerFactory);
         // 设置生产者监听器，用于监听消息发送成功和失败事件
-        kafkaTemplate.setProducerListener(new ProduceListenerImpl());
+        kafkaTemplate.setProducerListener(new ProduceListenerImpl(storeKafkaRecord));
         return kafkaTemplate;
     }
 

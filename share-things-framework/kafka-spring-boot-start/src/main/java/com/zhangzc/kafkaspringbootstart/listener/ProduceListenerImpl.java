@@ -1,6 +1,8 @@
 package com.zhangzc.kafkaspringbootstart.listener;
 
 
+import com.zhangzc.kafkaspringbootstart.service.StoreKafkaRecord;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -15,7 +17,10 @@ import org.springframework.lang.Nullable;
  * @author zhangzc
  */
 @Slf4j
+@RequiredArgsConstructor
 public class ProduceListenerImpl implements ProducerListener<String, String> {
+    private final StoreKafkaRecord storeKafkaRecord;
+
 
     /**
      * 消息发送成功回调
@@ -33,8 +38,7 @@ public class ProduceListenerImpl implements ProducerListener<String, String> {
                 producerRecord.key(),
                 producerRecord.value());
         //存入数据库里面进行记录
-        //todo
-
+        storeKafkaRecord.storeKafkaRecordOnSuccess(producerRecord,recordMetadata);
     }
 
     /**
@@ -55,8 +59,7 @@ public class ProduceListenerImpl implements ProducerListener<String, String> {
                 producerRecord.value(),
                 exception.getMessage(),
                 exception);
-
-        // TODO: 可以在这里添加失败处理逻辑
         // 例如：保存到数据库、发送告警、重试等
+        storeKafkaRecord.storeKafkaRecordOnFail(producerRecord,exception);
     }
 }

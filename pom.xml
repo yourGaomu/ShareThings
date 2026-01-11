@@ -27,6 +27,8 @@
         <module>share-thing-count2</module>
         <module>share-thing-search</module>
         <module>share-thing-front</module>
+        <module>share-thing-notify</module>
+        <module>share-thing-chat</module>
     </modules>
     <dependencies>
 
