@@ -6,11 +6,3 @@ spring:
       max-file-size: 10MB # 单个文件最大上传大小（可自定义，如50MB、1GB）
       max-request-size: 100MB # 单次请求（多文件上传）的总大小最大值
       file-size-threshold: 2MB # 文件大小超过该值时，会临时写入磁盘（默认0，即所有文件都临时写入磁盘）
-
-
-# ==================== Kafka配置 ====================
-zhang:
-  kafka:
-    consumer:
-      # 消费者组ID，同一个组内的消费者共同消费topic的消息
-      group-id: share_thing-article

@@ -93,7 +93,7 @@ public class ArticleController {
     }
 
     @PostMapping("getById")
-    @GetArticleInfodAddPV("#getArticleInfoVo.id")
+    @GetArticleInfodAddPV() // 移除双引号，规范SpEL表达式
     public R<ArticleDTO> getArticleByLabelId(@RequestBody GetArticleInfoVo getArticleInfoVo) throws ExecutionException, InterruptedException {
         return articleService.getArticleByLabelId(getArticleInfoVo);
     }

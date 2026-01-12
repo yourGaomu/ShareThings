@@ -1,18 +1,22 @@
 package com.zhangzc.sharethingarticleimpl.interfaces.handle;
 
+import com.zhangzc.globalcontextspringbootstart.context.GlobalContext;
 import com.zhangzc.kafkaspringbootstart.utills.KafkaUtills;
 import com.zhangzc.sharethingarticleimpl.consts.KafKaConst;
+import com.zhangzc.sharethingscommon.enums.UserActionEnum;
 import com.zhangzc.sharethingarticleimpl.interfaces.GetArticleInfodAddPV;
+import com.zhangzc.sharethingarticleimpl.pojo.req.GetArticleInfoVo;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 @Aspect
 @Component
@@ -33,27 +37,36 @@ public class AddPVByArticle {
         // 获取方法上的注解实例
         GetArticleInfodAddPV annotation = method.getAnnotation(GetArticleInfodAddPV.class);
         // 获取注解的value值
-        String annotationValue = annotation.value();
+        //String annotationValue = annotation.value();
         //获取入参的值
-        //getValue(joinPoint);
+        Long annotationValue = getValue(joinPoint);
+        if (annotationValue == null) {
+            return joinPoint.proceed();
+        }
+        //发送消息PV+1
         kafkaUtills.sendMessage(KafKaConst.ADD_PV_TOPIC, annotationValue);
+        //发送用户行为记录
+        Map<String,Object> map = new HashMap<>();
+        //那个用户发生了什么行为
+        map.put(UserActionEnum.ARTICLE_READ.getActionName(),GlobalContext.get());
+        kafkaUtills.sendMessage(KafKaConst.USER_BEHAVIOR_TOPIC, map);
         return joinPoint.proceed();
     }
 
 
-    private void getValue(ProceedingJoinPoint joinPoint) {
+    private Long getValue(ProceedingJoinPoint joinPoint) {
         // ========== 步骤2：获取方法入参（按需处理） ==========
         Object[] args = joinPoint.getArgs();
         if (args != null && args.length > 0) {
             for (int i = 0; i < args.length; i++) {
-                // 示例：如果入参是文章ID，可在此处获取并处理PV统计
-                if (args[i] instanceof Long) {
-                    Long articleId = (Long) args[i];
-                    System.out.println("处理文章PV统计，文章ID：" + articleId);
-                    // TODO: 执行PV+1的业务逻辑（比如更新数据库/缓存）
+                if (args[i] instanceof GetArticleInfoVo) {
+                    GetArticleInfoVo getArticleInfoVo = (GetArticleInfoVo) args[i];
+                    System.out.println("处理文章PV统计，文章ID：" + getArticleInfoVo.getId());
+                    return Long.valueOf(getArticleInfoVo.getId());
                 }
             }
         }
+        return null;
     }
 
 

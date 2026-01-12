@@ -118,15 +118,12 @@ class NotifyServiceImpl(
             if (notifyIds.isNotEmpty()) {
                 val notifyList = fsNotifyService.listByIds(notifyIds)
                 val notifyMap = notifyList.associateBy { it.id }
-
                 relations.forEach { rel ->
                     val notify = notifyMap[rel.notifyId] ?: return@forEach
-
                     // 按通知类型过滤（可选）
                     if (notifySearchDTO.type != null && notify.notifyType != notifySearchDTO.type) {
                         return@forEach
                     }
-
                     val isRead = rel.isRead == 1
                     val dto = mapToNotification(notify, isRead, userId)
                     resultList.add(dto)

@@ -8,15 +8,23 @@ import com.zhangzc.kafkaspringbootstart.service.impl.KafkaConsumeRecordByMongo;
 import com.zhangzc.kafkaspringbootstart.service.impl.KafkaConsumeRecordByMysql;
 import com.zhangzc.kafkaspringbootstart.utills.KafkaUtills;
 import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.mybatis.spring.annotation.MapperScan;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,6 +85,26 @@ public class KafkaConfig {
     }
 
     /**
+     * 反向实列化数据存储对象
+     */
+    @Bean
+    @ConditionalOnProperty(prefix = "zhang.kafka", name = "enable_mongo", havingValue = "true")
+    public StoreKafkaRecord mongoStoreKafkaRecord(MongoUtil mongoUtil, TransactionTemplate transactionTemplate) {
+        return new KafkaConsumeRecordByMongo(mongoUtil, transactionTemplate);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "zhang.kafka", name = "enable_mysql", havingValue = "true")
+    public StoreKafkaRecord mysqlStoreKafkaRecord(KafkaRecordService kafkaRecordService) {
+        return new KafkaConsumeRecordByMysql(kafkaRecordService);
+    }
+
+    @ConditionalOnMissingBean(StoreKafkaRecord.class)
+    public void throwS(){
+        throw new RuntimeException("你没有选择一个策略去保存数据");
+    }
+
+    /**
      * KafkaTemplate配置
      * <p>用于发送消息到Kafka</p>
      * <p>使用示例：</p>
@@ -92,24 +120,11 @@ public class KafkaConfig {
      * </pre>
      *
      * @param producerFactory 生产者工厂
+     * @param storeKafkaRecord 记录存储策略
      * @return KafkaTemplate实例
      */
 
-    /**
-     * 反向实列化数据存储对象
-     *
-     */
-    @Bean
-    @ConditionalOnProperty(prefix = "zhang.kafka", name = "enable_mysql", havingValue = "true")
-    public StoreKafkaRecord storeKafkaRecord(KafkaRecordService kafkaRecordService) {
-        return new KafkaConsumeRecordByMysql(kafkaRecordService);
-    }
 
-    @Bean
-    @ConditionalOnProperty(prefix = "zhang.kafka", name = "enable_mongo", havingValue = "true")
-    public StoreKafkaRecord storeKafkaRecord2(MongoUtil mongoUtil) {
-        return new KafkaConsumeRecordByMongo(mongoUtil);
-    }
 
     @Bean
     @ConditionalOnProperty(prefix = "zhang.kafka", name = "bootstrap-servers")
@@ -203,6 +218,14 @@ public class KafkaConfig {
     @ConditionalOnProperty(prefix = "zhang.kafka", name = "bootstrap-servers")
     public KafkaUtills kafkaUtills(KafkaTemplate<String, String> kafkaTemplate) {
         return new KafkaUtills(kafkaTemplate);
+    }
+
+    @Configuration
+    @ConditionalOnClass(name = "javax.sql.DataSource")
+    @ConditionalOnBean(type = "javax.sql.DataSource")
+    @MapperScan("com.zhangzc.kafkaspringbootstart.mapper")
+    @ComponentScan(basePackages = "com.zhangzc.kafkaspringbootstart.core.service.impl")
+    static class KafkaRecordMybatisAutoConfig {
     }
 }
 

@@ -20,8 +20,8 @@ public class KafkaProperty {
     /**
     * 选择策略,默认存入mysql
     * */
-    private String enable_mysql = "ture";
-    private String enable_mongo = "false";
+    private Boolean enable_mysql = false;
+    private Boolean enable_mongo = false;
 
     /**
      * Kafka服务器地址列表，多个用逗号分隔
