@@ -10,17 +10,23 @@ import com.zhangzc.redisspringbootstart.utills.RedissonUtil;
 import com.zhangzc.sharethingcountapi.consts.RedisUserGetLikeCounts;
 import com.zhangzc.sharethingcountapi.pojo.dto.FsLikeDto;
 import com.zhangzc.sharethingcountapi.rpc.likeCount;
+import com.zhangzc.sharethingcountimpl.pojo.domain.FsArticle;
 import com.zhangzc.sharethingcountimpl.pojo.domain.FsLike;
 import com.zhangzc.sharethingcountimpl.service.impl.FsLikeServiceImpl;
+import com.zhangzc.sharethingscommon.utils.TimeUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+@Slf4j
 @DubboService
 @RequiredArgsConstructor
 public class likeCountRpcImpl implements likeCount {
@@ -30,6 +36,7 @@ public class likeCountRpcImpl implements likeCount {
     private final RedisUtil redisUtil;
     private final RedisSetUtil redisSetUtil;
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    private final TransactionTemplate transactionTemplate;
 
     @Override
     public List<FsLikeDto> getLikeCountByArticleId(String articleId) {
@@ -170,5 +177,25 @@ public class likeCountRpcImpl implements likeCount {
             }, threadPoolTaskExecutor);
         }
         return objectDoubleMap;
+    }
+
+    @Override
+    public Boolean likeArticleByUserId(String articleId, String userId, String authorId) {
+        //开始入库
+        return transactionTemplate.execute(status -> {
+            try {
+                FsLike fsLike = new FsLike();
+                fsLike.setArticleId(Integer.valueOf(articleId));
+                fsLike.setLikeUser(Long.valueOf(userId));
+                fsLike.setAuthorId(Long.valueOf(authorId));
+                fsLike.setState(1);
+                fsLike.setCreateTime(TimeUtil.getDateTime(LocalDateTime.now()));
+                fsLike.setUpdateTime(TimeUtil.getDateTime(LocalDateTime.now()));
+                return fsLikeServiceImpl.save(fsLike);
+            } catch (Exception e) {
+                log.error("用户保存出错：#{}", e.getMessage());
+                return false;
+            }
+        });
     }
 }

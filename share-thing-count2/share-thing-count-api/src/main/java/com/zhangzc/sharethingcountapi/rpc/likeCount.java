@@ -16,4 +16,6 @@ public interface likeCount {
 
     Map<String,Double> getLikeCountByUserIds(List<String> userIds);
 
+    Boolean likeArticleByUserId(String articleId,String userId,String authorId);
+
 }

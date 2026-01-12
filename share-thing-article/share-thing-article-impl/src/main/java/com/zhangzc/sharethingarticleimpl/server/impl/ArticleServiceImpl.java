@@ -11,6 +11,7 @@ import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
 import com.zhangzc.redisspringbootstart.redisConst.RedisZHashConst;
 import com.zhangzc.redisspringbootstart.utills.RedisSetUtil;
 import com.zhangzc.redisspringbootstart.utills.RedisUtil;
+import com.zhangzc.sharethingarticleapi.rpc.ArticleRpc;
 import com.zhangzc.sharethingarticleimpl.consts.RedisLabelConst;
 import com.zhangzc.sharethingarticleimpl.consts.RedisUserGetArticleByStateConst;
 import com.zhangzc.sharethingarticleimpl.pojo.domain.FsArticle;
@@ -23,6 +24,7 @@ import com.zhangzc.sharethingarticleimpl.server.ArticleService;
 import com.zhangzc.sharethingarticleimpl.server.FsArticleLabelService;
 import com.zhangzc.sharethingarticleimpl.server.FsArticleService;
 import com.zhangzc.sharethingarticleimpl.server.FsLabelService;
+import com.zhangzc.sharethingarticleimpl.server.rpc.ArticleRpcImpl;
 import com.zhangzc.sharethingcommentapi.consts.articleCommentAndLike;
 import com.zhangzc.sharethingcommentapi.rpc.CommentSearch;
 import com.zhangzc.sharethingcountapi.consts.LikeAndFollowEnums;
@@ -68,7 +70,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     // Redis缓存TTL常量（1小时）
     private static final int CACHE_TTL = 3600;
-
+    private final ArticleRpc articleRpc;
     private final TransactionTemplate transactionTemplate;
     private final FsArticleService fsArticleService;
     private final MongoUtil mongoUtil;
@@ -498,6 +500,17 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
+    @Override
+    public void likeArticle(String articleId, String userId) {
+        //发送Rpc请求
+        CompletableFuture.runAsync(() -> {
+            Map<String, String> userIdsByArticleIds = articleRpc.getUserIdsByArticleIds(List.of(articleId));
+            //获取作者id
+            String authorId = userIdsByArticleIds.get(articleId);
+            likeCount.likeArticleByUserId(articleId, userId,authorId);
+        }, threadPoolTaskExecutor);
+    }
+
     //获取启用的文章
     private PageResponse<ArticleDTO> getEnableArticles(ArticleSearchDTO articleSearchDTO) {
         //获取当前的页，当前的页面大小
@@ -509,10 +522,10 @@ public class ArticleServiceImpl implements ArticleService {
         if (pageSize == null || pageSize <= 0) {
             pageSize = 10;
         }
-        
+
         Long userId = articleSearchDTO.getCreateUser();
         Integer state = 1; // 启用状态
-        
+
         // 1. 尝试从Redis缓存获取文章ID列表
         //user:articles:{userId}:{state}
         String cacheKey = RedisUserGetArticleByStateConst.USER_ARTICLES_BY_STATE.replace("{userId}", userId.toString())
@@ -524,26 +537,26 @@ public class ArticleServiceImpl implements ArticleService {
             long end = start + pageSize - 1;
             // 从ZSet中按score倒序获取文章ID列表（ZREVRANGE）
             Set<Object> cachedArticleIds = redisUtil.zReverseRange(cacheKey, start, end);
-            
+
             if (cachedArticleIds != null && !cachedArticleIds.isEmpty()) {
                 // 缓存命中，获取总数
                 Long total = redisUtil.zCard(cacheKey);
-                
+
                 // 转换为文章ID列表
                 List<String> articleIdList = cachedArticleIds.stream()
                         .map(String::valueOf)
                         .collect(Collectors.toList());
-                
+
                 // 获取文章详情（已在getArticleDTOList中有缓存）
                 List<ArticleDTO> articleDTOList = getArticleDTOList(articleIdList, userId.toString());
-                
+
                 int totalPages = (int) Math.ceil((double) total / pageSize);
                 return PageResponse.success(articleDTOList, totalPages, total);
             }
         } catch (Exception e) {
             log.warn("从Redis获取个人文章列表失败，降级查询数据库: {}", e.getMessage());
         }
-        
+
         // 2. 缓存未命中或异常，查询数据库
         IPage<FsArticle> page = new Page<>(currentPage, pageSize);
         LambdaQueryWrapper<FsArticle> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -552,13 +565,13 @@ public class ArticleServiceImpl implements ArticleService {
                 .eq(FsArticle::getState, state)
                 .eq(FsArticle::getCreateUser, userId)
                 .orderByDesc(FsArticle::getTop, FsArticle::getCreateTime);
-        
+
         IPage<FsArticle> result = fsArticleService.page(page, lambdaQueryWrapper);
-        
+
         if (result == null || result.getRecords().isEmpty()) {
             return PageResponse.success(Collections.emptyList(), 1, 0);
         }
-        
+
         // 3. 查询成功，智能缓存策略
         List<FsArticle> records = result.getRecords();
         long totalCount = result.getTotal();
@@ -566,7 +579,7 @@ public class ArticleServiceImpl implements ArticleService {
             try {
                 // 根据数据量决定缓存策略：小数据量缓存全部，大数据量只缓存当前页
                 final int CACHE_THRESHOLD = 100; // 缓存阈值：100篇文章
-                
+
                 if (totalCount <= CACHE_THRESHOLD) {
                     // 数据量小，一次性缓存所有文章（提高后续查询命中率）
                     List<FsArticle> allArticles = fsArticleService.lambdaQuery()
@@ -575,7 +588,7 @@ public class ArticleServiceImpl implements ArticleService {
                             .eq(FsArticle::getCreateUser, userId)
                             .orderByDesc(FsArticle::getTop, FsArticle::getCreateTime)
                             .list();
-                    
+
                     if (!allArticles.isEmpty()) {
                         Map<Object, Double> zsetData = new LinkedHashMap<>();
                         for (FsArticle article : allArticles) {
@@ -599,7 +612,7 @@ public class ArticleServiceImpl implements ArticleService {
                         }
                         zsetData.put(article.getId().toString(), score);
                     }
-                    
+
                     if (!zsetData.isEmpty()) {
                         redisUtil.zAdd(cacheKey, zsetData);
                         // 数据量大时设置较短过期时间（10分钟）
@@ -611,13 +624,13 @@ public class ArticleServiceImpl implements ArticleService {
                 log.error("更新个人文章列表缓存失败: {}", e.getMessage(), e);
             }
         }, threadPoolTaskExecutor);
-        
+
         // 4. 转换为DTO并返回
         List<String> articleIds = records.stream()
                 .map(FsArticle::getId)
                 .map(String::valueOf)
                 .collect(Collectors.toList());
-        
+
         try {
             List<ArticleDTO> articleDTOList = getArticleDTOList(articleIds, userId.toString());
             int totalPages = (int) Math.ceil((double) result.getTotal() / pageSize);
@@ -627,6 +640,7 @@ public class ArticleServiceImpl implements ArticleService {
             throw new RuntimeException("获取文章列表失败", e);
         }
     }
+
     //获取禁用的文章
     private PageResponse<ArticleDTO> getDisabledArticles(ArticleSearchDTO articleSearchDTO) {
         //获取当前的页，当前的页面大小
@@ -638,41 +652,41 @@ public class ArticleServiceImpl implements ArticleService {
         if (pageSize == null || pageSize <= 0) {
             pageSize = 10;
         }
-        
+
         Long userId = articleSearchDTO.getCreateUser();
         Integer state = 0; // 禁用状态
-        
+
         // 1. 尝试从Redis缓存获取文章ID列表
         String cacheKey = RedisUserGetArticleByStateConst.USER_ARTICLES_BY_STATE.replace("{userId}", userId.toString())
                 .replace("{state}", state.toString());
-        
+
         try {
             // 计算分页的起止位置
             long start = (long) (currentPage - 1) * pageSize;
             long end = start + pageSize - 1;
-            
+
             // 从ZSet中按score倒序获取文章ID列表（ZREVRANGE）
             Set<Object> cachedArticleIds = redisUtil.zReverseRange(cacheKey, start, end);
-            
+
             if (cachedArticleIds != null && !cachedArticleIds.isEmpty()) {
                 // 缓存命中，获取总数
                 Long total = redisUtil.zCard(cacheKey);
-                
+
                 // 转换为文章ID列表
                 List<String> articleIdList = cachedArticleIds.stream()
                         .map(String::valueOf)
                         .collect(Collectors.toList());
-                
+
                 // 获取文章详情（已在getArticleDTOList中有缓存）
                 List<ArticleDTO> articleDTOList = getArticleDTOList(articleIdList, userId.toString());
-                
+
                 int totalPages = (int) Math.ceil((double) total / pageSize);
                 return PageResponse.success(articleDTOList, totalPages, total);
             }
         } catch (Exception e) {
             log.warn("从Redis获取禁用文章列表失败，降级查询数据库: {}", e.getMessage());
         }
-        
+
         // 2. 缓存未命中或异常，查询数据库
         IPage<FsArticle> page = new Page<>(currentPage, pageSize);
         LambdaQueryWrapper<FsArticle> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -681,22 +695,22 @@ public class ArticleServiceImpl implements ArticleService {
                 .eq(FsArticle::getState, state)
                 .eq(FsArticle::getCreateUser, userId)
                 .orderByDesc(FsArticle::getTop, FsArticle::getCreateTime);
-        
+
         IPage<FsArticle> result = fsArticleService.page(page, lambdaQueryWrapper);
-        
+
         if (result == null || result.getRecords().isEmpty()) {
             return PageResponse.success(Collections.emptyList(), 1, 0);
         }
-        
+
         // 3. 查询成功，智能缓存策略
         List<FsArticle> records = result.getRecords();
         long totalCount = result.getTotal();
-        
+
         CompletableFuture.runAsync(() -> {
             try {
                 // 根据数据量决定缓存策略：小数据量缓存全部，大数据量只缓存当前页
                 final int CACHE_THRESHOLD = 100; // 缓存阈值：100篇文章
-                
+
                 if (totalCount <= CACHE_THRESHOLD) {
                     // 数据量小，一次性缓存所有文章（提高后续查询命中率）
                     List<FsArticle> allArticles = fsArticleService.lambdaQuery()
@@ -705,7 +719,7 @@ public class ArticleServiceImpl implements ArticleService {
                             .eq(FsArticle::getCreateUser, userId)
                             .orderByDesc(FsArticle::getTop, FsArticle::getCreateTime)
                             .list();
-                    
+
                     if (!allArticles.isEmpty()) {
                         Map<Object, Double> zsetData = new LinkedHashMap<>();
                         for (FsArticle article : allArticles) {
@@ -729,7 +743,7 @@ public class ArticleServiceImpl implements ArticleService {
                         }
                         zsetData.put(article.getId().toString(), score);
                     }
-                    
+
                     if (!zsetData.isEmpty()) {
                         redisUtil.zAdd(cacheKey, zsetData);
                         // 数据量大时设置较短过期时间（10分钟）
@@ -741,13 +755,13 @@ public class ArticleServiceImpl implements ArticleService {
                 log.error("更新禁用文章列表缓存失败: {}", e.getMessage(), e);
             }
         }, threadPoolTaskExecutor);
-        
+
         // 4. 转换为DTO并返回
         List<String> articleIds = records.stream()
                 .map(FsArticle::getId)
                 .map(String::valueOf)
                 .collect(Collectors.toList());
-        
+
         try {
             List<ArticleDTO> articleDTOList = getArticleDTOList(articleIds, userId.toString());
             int totalPages = (int) Math.ceil((double) result.getTotal() / pageSize);
@@ -757,6 +771,7 @@ public class ArticleServiceImpl implements ArticleService {
             throw new RuntimeException("获取禁用文章列表失败", e);
         }
     }
+
     //获取待审核的文章
     private PageResponse<ArticleDTO> getPendingReviewArticles(ArticleSearchDTO articleSearchDTO) {
         //获取当前的页，当前的页面大小
@@ -768,41 +783,41 @@ public class ArticleServiceImpl implements ArticleService {
         if (pageSize == null || pageSize <= 0) {
             pageSize = 10;
         }
-        
+
         Long userId = articleSearchDTO.getCreateUser();
         Integer state = -1; // 待审核状态
-        
+
         // 1. 尝试从Redis缓存获取文章ID列表
         String cacheKey = RedisUserGetArticleByStateConst.USER_ARTICLES_BY_STATE.replace("{userId}", userId.toString())
                 .replace("{state}", state.toString());
-        
+
         try {
             // 计算分页的起止位置
             long start = (long) (currentPage - 1) * pageSize;
             long end = start + pageSize - 1;
-            
+
             // 从ZSet中按score倒序获取文章ID列表（ZREVRANGE）
             Set<Object> cachedArticleIds = redisUtil.zReverseRange(cacheKey, start, end);
-            
+
             if (cachedArticleIds != null && !cachedArticleIds.isEmpty()) {
                 // 缓存命中，获取总数
                 Long total = redisUtil.zCard(cacheKey);
-                
+
                 // 转换为文章ID列表
                 List<String> articleIdList = cachedArticleIds.stream()
                         .map(String::valueOf)
                         .collect(Collectors.toList());
-                
+
                 // 获取文章详情（已在getArticleDTOList中有缓存）
                 List<ArticleDTO> articleDTOList = getArticleDTOList(articleIdList, userId.toString());
-                
+
                 int totalPages = (int) Math.ceil((double) total / pageSize);
                 return PageResponse.success(articleDTOList, totalPages, total);
             }
         } catch (Exception e) {
             log.warn("从Redis获取待审核文章列表失败，降级查询数据库: {}", e.getMessage());
         }
-        
+
         // 2. 缓存未命中或异常，查询数据库
         IPage<FsArticle> page = new Page<>(currentPage, pageSize);
         LambdaQueryWrapper<FsArticle> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -811,22 +826,22 @@ public class ArticleServiceImpl implements ArticleService {
                 .eq(FsArticle::getState, state)
                 .eq(FsArticle::getCreateUser, userId)
                 .orderByDesc(FsArticle::getTop, FsArticle::getCreateTime);
-        
+
         IPage<FsArticle> result = fsArticleService.page(page, lambdaQueryWrapper);
-        
+
         if (result == null || result.getRecords().isEmpty()) {
             return PageResponse.success(Collections.emptyList(), 1, 0);
         }
-        
+
         // 3. 查询成功，智能缓存策略
         List<FsArticle> records = result.getRecords();
         long totalCount = result.getTotal();
-        
+
         CompletableFuture.runAsync(() -> {
             try {
                 // 根据数据量决定缓存策略：小数据量缓存全部，大数据量只缓存当前页
                 final int CACHE_THRESHOLD = 100; // 缓存阈值：100篇文章
-                
+
                 if (totalCount <= CACHE_THRESHOLD) {
                     // 数据量小，一次性缓存所有文章（提高后续查询命中率）
                     List<FsArticle> allArticles = fsArticleService.lambdaQuery()
@@ -835,7 +850,7 @@ public class ArticleServiceImpl implements ArticleService {
                             .eq(FsArticle::getCreateUser, userId)
                             .orderByDesc(FsArticle::getTop, FsArticle::getCreateTime)
                             .list();
-                    
+
                     if (!allArticles.isEmpty()) {
                         Map<Object, Double> zsetData = new LinkedHashMap<>();
                         for (FsArticle article : allArticles) {
@@ -859,7 +874,7 @@ public class ArticleServiceImpl implements ArticleService {
                         }
                         zsetData.put(article.getId().toString(), score);
                     }
-                    
+
                     if (!zsetData.isEmpty()) {
                         redisUtil.zAdd(cacheKey, zsetData);
                         // 数据量大时设置较短过期时间（10分钟）
@@ -871,13 +886,13 @@ public class ArticleServiceImpl implements ArticleService {
                 log.error("更新待审核文章列表缓存失败: {}", e.getMessage(), e);
             }
         }, threadPoolTaskExecutor);
-        
+
         // 4. 转换为DTO并返回
         List<String> articleIds = records.stream()
                 .map(FsArticle::getId)
                 .map(String::valueOf)
                 .collect(Collectors.toList());
-        
+
         try {
             List<ArticleDTO> articleDTOList = getArticleDTOList(articleIds, userId.toString());
             int totalPages = (int) Math.ceil((double) result.getTotal() / pageSize);

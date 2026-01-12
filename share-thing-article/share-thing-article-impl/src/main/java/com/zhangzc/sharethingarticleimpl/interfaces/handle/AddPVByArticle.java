@@ -12,17 +12,20 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Aspect
 @Component
 @RequiredArgsConstructor
 public class AddPVByArticle {
     private final KafkaUtills kafkaUtills;
+    private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     @Pointcut("@annotation(com.zhangzc.sharethingarticleimpl.interfaces.GetArticleInfodAddPV)")
     public void pointcut() {
@@ -43,13 +46,18 @@ public class AddPVByArticle {
         if (annotationValue == null) {
             return joinPoint.proceed();
         }
-        //发送消息PV+1
-        kafkaUtills.sendMessage(KafKaConst.ADD_PV_TOPIC, annotationValue);
-        //发送用户行为记录
-        Map<String,Object> map = new HashMap<>();
-        //那个用户发生了什么行为
-        map.put(UserActionEnum.ARTICLE_READ.getActionName(),GlobalContext.get());
-        kafkaUtills.sendMessage(KafKaConst.USER_BEHAVIOR_TOPIC, map);
+        String userId = (String) GlobalContext.get();
+        //开启异步任务
+        CompletableFuture.runAsync(() -> {
+            //发送消息PV+1
+            kafkaUtills.sendMessage(KafKaConst.ADD_PV_TOPIC, annotationValue);
+            //发送用户行为记录
+            Map<String, Object> map = new HashMap<>();
+            //那个用户发生了什么行为
+            map.put(UserActionEnum.ARTICLE_READ.getActionName(), userId);
+            kafkaUtills.sendMessage(KafKaConst.USER_BEHAVIOR_TOPIC, map);
+        }, threadPoolTaskExecutor);
+
         return joinPoint.proceed();
     }
 

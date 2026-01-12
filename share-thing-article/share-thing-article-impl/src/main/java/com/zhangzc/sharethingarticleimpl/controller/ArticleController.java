@@ -1,6 +1,7 @@
 package com.zhangzc.sharethingarticleimpl.controller;
 
 
+import com.zhangzc.globalcontextspringbootstart.context.GlobalContext;
 import com.zhangzc.miniospringbootstart.utills.MinioUtil;
 import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
 import com.zhangzc.sharethingarticleimpl.interfaces.GetArticleInfodAddPV;
@@ -9,6 +10,8 @@ import com.zhangzc.sharethingarticleimpl.pojo.req.GetArticleInfoVo;
 import com.zhangzc.sharethingarticleimpl.pojo.req.LikeSearchVo;
 import com.zhangzc.sharethingarticleimpl.server.ArticleService;
 import com.zhangzc.sharethingscommon.enums.ArticleStateEnum;
+import com.zhangzc.sharethingscommon.enums.ResponseCodeEnum;
+import com.zhangzc.sharethingscommon.exception.BusinessException;
 import com.zhangzc.sharethingscommon.pojo.dto.*;
 import com.zhangzc.sharethingscommon.utils.PageResponse;
 import com.zhangzc.sharethingscommon.utils.R;
@@ -31,6 +34,17 @@ public class ArticleController {
     private final MongoUtil mongoUtil;
     private final MinioUtil minioUtil;
     private final ArticleService articleService;
+
+    @PostMapping("/like")
+    public R<String> likeArticle(@RequestBody String articleId) {
+        Object o = GlobalContext.get();
+        if (o == null) {
+            throw new BusinessException(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+        String userId = (String) o;
+        articleService.likeArticle(articleId,userId);
+        return R.ok("用户点赞文章成功");
+    }
 
     /**
      * 上传图片
@@ -93,7 +107,7 @@ public class ArticleController {
     }
 
     @PostMapping("getById")
-    @GetArticleInfodAddPV() // 移除双引号，规范SpEL表达式
+    @GetArticleInfodAddPV()
     public R<ArticleDTO> getArticleByLabelId(@RequestBody GetArticleInfoVo getArticleInfoVo) throws ExecutionException, InterruptedException {
         return articleService.getArticleByLabelId(getArticleInfoVo);
     }

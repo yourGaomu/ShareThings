@@ -32,4 +32,6 @@ public interface ArticleService {
     R<ArticleDTO> getArticleByLabelId(GetArticleInfoVo getArticleInfoVo) throws ExecutionException, InterruptedException;
 
     PageResponse<ArticleDTO> getPersonalArticles(ArticleSearchDTO articleSearchDTO, ArticleStateEnum articleStateEnum);
+
+    void likeArticle(String articleId, String userId);
 }

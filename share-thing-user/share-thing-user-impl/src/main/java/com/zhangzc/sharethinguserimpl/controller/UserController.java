@@ -35,7 +35,7 @@ public class UserController {
 
 
     @PostMapping("getUserInfo")
-    public R<UserForumDTO> getUserInfo(@RequestBody UserIdRequest userIdRequest) throws Exception {
+    public R<UserForumDTO> getUserInfo(@RequestBody UserIdRequest userIdRequest) {
         // 检查请求参数
         if (userIdRequest == null || userIdRequest.getUserId() == null || userIdRequest.getUserId().isEmpty()) {
             throw new IllegalArgumentException("加密的userId不能为空");
@@ -57,5 +57,8 @@ public class UserController {
         return R.ok(result);
     }
 
-
+    @PostMapping("/getUserActive")
+    public R<Boolean> getUserActive(@RequestBody UserIdRequest userIdRequest) {
+        return R.ok(true);
+    }
 }
