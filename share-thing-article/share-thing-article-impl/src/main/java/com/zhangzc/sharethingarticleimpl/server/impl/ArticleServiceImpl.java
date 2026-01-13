@@ -500,16 +500,6 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
-    @Override
-    public void likeArticle(String articleId, String userId) {
-        //发送Rpc请求
-        CompletableFuture.runAsync(() -> {
-            Map<String, String> userIdsByArticleIds = articleRpc.getUserIdsByArticleIds(List.of(articleId));
-            //获取作者id
-            String authorId = userIdsByArticleIds.get(articleId);
-            likeCount.likeArticleByUserId(articleId, userId,authorId);
-        }, threadPoolTaskExecutor);
-    }
 
     //获取启用的文章
     private PageResponse<ArticleDTO> getEnableArticles(ArticleSearchDTO articleSearchDTO) {

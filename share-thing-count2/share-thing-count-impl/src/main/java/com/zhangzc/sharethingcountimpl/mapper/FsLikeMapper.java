@@ -2,6 +2,7 @@ package com.zhangzc.sharethingcountimpl.mapper;
 
 import com.zhangzc.sharethingcountimpl.pojo.domain.FsLike;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
 * @author 吃饭
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface FsLikeMapper extends BaseMapper<FsLike> {
 
+    Boolean saveFslike(@Param("fsLike") FsLike fsLike);
 }
 
 

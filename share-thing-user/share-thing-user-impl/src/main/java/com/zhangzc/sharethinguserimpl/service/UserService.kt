@@ -10,4 +10,5 @@ interface UserService {
     fun getCurrentUserRights(): UserRightsDTO
     fun getUserInfo(userId: String): com.zhangzc.sharethinguserimpl.pojo.vo.UserForumDTO
     fun getHotAuthorsList(userSearchDTO: com.zhangzc.sharethinguserimpl.pojo.vo.UserSearchDTO): com.zhangzc.sharethingscommon.utils.PageResponse<com.zhangzc.sharethinguserimpl.pojo.vo.UserForumDTO>
+    fun likeArticle(articleId: String, userId: String)
 }

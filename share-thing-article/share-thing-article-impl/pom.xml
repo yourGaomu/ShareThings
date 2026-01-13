@@ -22,6 +22,8 @@
     <packaging>jar</packaging>
 
     <dependencies>
+
+
         <dependency>
             <groupId>com.zhangzc</groupId>
             <artifactId>kafka-spring-boot-start</artifactId>

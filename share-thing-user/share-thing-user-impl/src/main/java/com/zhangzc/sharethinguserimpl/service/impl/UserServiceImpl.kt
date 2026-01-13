@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.zhangzc.fakebookspringbootstartjackon.Utils.JsonUtils
 import com.zhangzc.globalcontextspringbootstart.context.GlobalContext
 import com.zhangzc.redisspringbootstart.utills.RedisUtil
+import com.zhangzc.sharethingarticleapi.rpc.ArticleRpc
 import com.zhangzc.sharethingcountapi.rpc.likeCount
 import com.zhangzc.sharethingcountapi.rpc.pvCount
 import com.zhangzc.sharethingscommon.exception.BusinessException
@@ -13,36 +14,20 @@ import com.zhangzc.sharethingscommon.utils.PageResponse
 import com.zhangzc.sharethingscommon.utils.TimeUtil
 import com.zhangzc.sharethinguserimpl.Enum.ResponseCodeEnum
 import com.zhangzc.sharethinguserimpl.consts.RedisConstants
-import com.zhangzc.sharethinguserimpl.pojo.domain.AuthorHeatDay
-import com.zhangzc.sharethinguserimpl.pojo.domain.AuthorHeatMonth
-import com.zhangzc.sharethinguserimpl.pojo.domain.AuthorHeatWeek
-import com.zhangzc.sharethinguserimpl.pojo.domain.FsPermissions
-import com.zhangzc.sharethinguserimpl.pojo.domain.FsRole
-import com.zhangzc.sharethinguserimpl.pojo.domain.FsRolePermissions
-import com.zhangzc.sharethinguserimpl.pojo.domain.FsUserInfo
-import com.zhangzc.sharethinguserimpl.pojo.domain.FsUserLevel
-import com.zhangzc.sharethinguserimpl.pojo.domain.FsUserRole
-import com.zhangzc.sharethinguserimpl.pojo.vo.PermissionsSsoDTO
-import com.zhangzc.sharethinguserimpl.pojo.vo.RoleSsoDTO
-import com.zhangzc.sharethinguserimpl.pojo.vo.UserForumDTO
-import com.zhangzc.sharethinguserimpl.pojo.vo.UserRightsDTO
-import com.zhangzc.sharethinguserimpl.pojo.vo.UserSearchDTO
-import com.zhangzc.sharethinguserimpl.service.FsPermissionsService
-import com.zhangzc.sharethinguserimpl.service.FsRolePermissionsService
-import com.zhangzc.sharethinguserimpl.service.FsRoleService
-import com.zhangzc.sharethinguserimpl.service.FsUserInfoService
-import com.zhangzc.sharethinguserimpl.service.FsUserLevelService
-import com.zhangzc.sharethinguserimpl.service.FsUserRoleService
-import com.zhangzc.sharethinguserimpl.service.UserService
+import com.zhangzc.sharethinguserimpl.pojo.domain.*
+import com.zhangzc.sharethinguserimpl.pojo.vo.*
+import com.zhangzc.sharethinguserimpl.service.*
 import lombok.extern.slf4j.Slf4j
 import org.apache.dubbo.config.annotation.DubboReference
 import org.springframework.beans.BeanUtils
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ThreadPoolExecutor
 
 @Service
 @Slf4j
@@ -58,6 +43,9 @@ class UserServiceImpl(
     private val authorHeatWeekServiceImpl: AuthorHeatWeekServiceImpl,
     private val authorHeatDayServiceImpl: AuthorHeatDayServiceImpl,
     private val authorHeatBehaviorServiceImpl: AuthorHeatBehaviorServiceImpl,
+    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    @DubboReference(check = false, timeout = 5000)
+    private val articleRpc: ArticleRpc,
     @DubboReference(check = false, timeout = 5000)
     val likeCountImpl: likeCount,
     @DubboReference(check = false, timeout = 5000)
@@ -450,5 +438,17 @@ class UserServiceImpl(
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM")
         return date.format(formatter)
     }
+
+     override fun likeArticle(articleId: String, userId: String) {
+        //发送Rpc请求
+        CompletableFuture.runAsync({
+            val userIdsByArticleIds: MutableMap<String?, String?> =
+                articleRpc.getUserIdsByArticleIds(listOf<String>(articleId))
+            //获取作者id
+            val authorId = userIdsByArticleIds.get(articleId)
+            likeCountImpl.likeArticleByUserId(articleId, userId, authorId)
+        }, threadPoolTaskExecutor)
+    }
+
 
 }

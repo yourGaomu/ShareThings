@@ -6,15 +6,37 @@
 
     <resultMap id="BaseResultMap" type="com.zhangzc.sharethingcountimpl.pojo.domain.FsLike">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="article_id" column="article_id" jdbcType="INTEGER"/>
+            <result property="articleId" column="article_id" jdbcType="INTEGER"/>
             <result property="state" column="state" jdbcType="TINYINT"/>
-            <result property="like_user" column="like_user" jdbcType="BIGINT"/>
-            <result property="create_time" column="create_time" jdbcType="TIMESTAMP"/>
-            <result property="update_time" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="likeUser" column="like_user" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,article_id,author_id,state,
         like_user,create_time,update_time
     </sql>
+
+    <!-- 无则添加，有则取反点赞状态 -->
+    <insert id="saveFslike" parameterType="com.zhangzc.sharethingcountimpl.pojo.domain.FsLike">
+        INSERT INTO fs_like (
+        author_id,
+        state,
+        like_user,
+        create_time,
+        update_time
+        ) VALUES (
+        #{fsLike.authorId},
+        1,  <!-- 新增默认点赞状态为1 -->
+        #{fsLike.likeUser},
+        #{fslike.createTime},
+        #{fslike.updateTime}
+        )
+        ON DUPLICATE KEY UPDATE
+        state = 1 - state,  <!-- 状态取反核心逻辑 -->
+        update_time = #{fslike.updateTime},
+        author_id = #{fsLike.authorId}
+    </insert>
+    
 </mapper>

@@ -33,5 +33,4 @@ public interface ArticleService {
 
     PageResponse<ArticleDTO> getPersonalArticles(ArticleSearchDTO articleSearchDTO, ArticleStateEnum articleStateEnum);
 
-    void likeArticle(String articleId, String userId);
 }

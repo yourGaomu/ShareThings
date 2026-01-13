@@ -1,6 +1,9 @@
 package com.zhangzc.sharethinguserimpl.controller;
 
+import com.zhangzc.globalcontextspringbootstart.context.GlobalContext;
 import com.zhangzc.globalcontextspringbootstart.utils.EncodeUtil;
+import com.zhangzc.sharethingscommon.enums.ResponseCodeEnum;
+import com.zhangzc.sharethingscommon.exception.BusinessException;
 import com.zhangzc.sharethingscommon.utils.PageResponse;
 import com.zhangzc.sharethingscommon.utils.R;
 import com.zhangzc.sharethinguserimpl.pojo.vo.UserForumDTO;
@@ -26,6 +29,16 @@ public class UserController {
         return R.ok(result);
     }
 
+    @PostMapping("/updateLikeState")
+    public R<String> likeArticle(@RequestBody String articleId) {
+        Object o = GlobalContext.get();
+        if (o == null) {
+            throw new BusinessException(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+        String userId = (String) o;
+        userService.likeArticle(articleId,userId);
+        return R.ok("用户点赞文章成功");
+    }
 
     @PostMapping("getHotAuthorsList")
     public R<PageResponse<UserForumDTO>> getHotAuthorsList(UserSearchDTO userSearchDTO) {

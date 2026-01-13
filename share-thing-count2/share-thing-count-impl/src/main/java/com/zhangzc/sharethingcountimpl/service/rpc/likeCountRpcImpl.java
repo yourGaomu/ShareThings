@@ -191,7 +191,7 @@ public class likeCountRpcImpl implements likeCount {
                 fsLike.setState(1);
                 fsLike.setCreateTime(TimeUtil.getDateTime(LocalDateTime.now()));
                 fsLike.setUpdateTime(TimeUtil.getDateTime(LocalDateTime.now()));
-                return fsLikeServiceImpl.save(fsLike);
+                return fsLikeServiceImpl.saveFslike(fsLike);
             } catch (Exception e) {
                 log.error("用户保存出错：#{}", e.getMessage());
                 return false;

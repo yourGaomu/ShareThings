@@ -6,17 +6,17 @@
 
     <resultMap id="BaseResultMap" type="com.zhangzc.sharethingcountimpl.pojo.domain.FsArticle">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="title_map" column="title_map" jdbcType="VARCHAR"/>
+            <result property="titleMap" column="title_map" jdbcType="VARCHAR"/>
             <result property="title" column="title" jdbcType="VARCHAR"/>
             <result property="content" column="content" jdbcType="VARCHAR"/>
             <result property="state" column="state" jdbcType="TINYINT"/>
             <result property="pv" column="pv" jdbcType="INTEGER"/>
             <result property="top" column="top" jdbcType="INTEGER"/>
-            <result property="is_deleted" column="is_deleted" jdbcType="TINYINT"/>
-            <result property="create_user" column="create_user" jdbcType="BIGINT"/>
-            <result property="update_user" column="update_user" jdbcType="BIGINT"/>
-            <result property="create_time" column="create_time" jdbcType="TIMESTAMP"/>
-            <result property="update_time" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
+            <result property="createUser" column="create_user" jdbcType="BIGINT"/>
+            <result property="updateUser" column="update_user" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">

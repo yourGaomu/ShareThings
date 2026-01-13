@@ -15,6 +15,14 @@ import org.springframework.stereotype.Service;
 public class FsLikeServiceImpl extends ServiceImpl<FsLikeMapper, FsLike>
     implements FsLikeService{
 
+
+    /**
+    * 没有则会添加，有则取反点赞状态
+    * */
+    public boolean saveFslike(FsLike fsLike){
+        return this.baseMapper.saveFslike(fsLike);
+    }
+
 }
 
 

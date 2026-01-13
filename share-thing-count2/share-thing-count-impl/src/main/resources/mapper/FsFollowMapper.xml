@@ -6,11 +6,11 @@
 
     <resultMap id="BaseResultMap" type="com.zhangzc.sharethingcountimpl.pojo.domain.FsFollow">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="from_user" column="from_user" jdbcType="BIGINT"/>
+            <result property="fromUser" column="from_user" jdbcType="BIGINT"/>
             <result property="state" column="state" jdbcType="TINYINT"/>
-            <result property="to_user" column="to_user" jdbcType="BIGINT"/>
-            <result property="create_time" column="create_time" jdbcType="TIMESTAMP"/>
-            <result property="update_time" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="toUser" column="to_user" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">

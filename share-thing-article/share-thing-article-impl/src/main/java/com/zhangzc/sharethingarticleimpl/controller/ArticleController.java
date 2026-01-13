@@ -35,16 +35,6 @@ public class ArticleController {
     private final MinioUtil minioUtil;
     private final ArticleService articleService;
 
-    @PostMapping("/like")
-    public R<String> likeArticle(@RequestBody String articleId) {
-        Object o = GlobalContext.get();
-        if (o == null) {
-            throw new BusinessException(ResponseCodeEnum.USER_NOT_FOUND);
-        }
-        String userId = (String) o;
-        articleService.likeArticle(articleId,userId);
-        return R.ok("用户点赞文章成功");
-    }
 
     /**
      * 上传图片
