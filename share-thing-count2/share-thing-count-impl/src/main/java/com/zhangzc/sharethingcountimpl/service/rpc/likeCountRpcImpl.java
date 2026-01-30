@@ -141,10 +141,7 @@ public class likeCountRpcImpl implements likeCount {
             BeanUtils.copyProperties(record, fsLikeDto);
             return fsLikeDto;
         }).toList();
-
-
     }
-
     @Override
     public Map<String, Double> getLikeCountByUserIds(List<String> userIds) {
         //从redis里面查询
@@ -191,7 +188,9 @@ public class likeCountRpcImpl implements likeCount {
                 fsLike.setState(1);
                 fsLike.setCreateTime(TimeUtil.getDateTime(LocalDateTime.now()));
                 fsLike.setUpdateTime(TimeUtil.getDateTime(LocalDateTime.now()));
-                return fsLikeServiceImpl.saveFslike(fsLike);
+                boolean result = fsLikeServiceImpl.saveFslike(fsLike);
+                log.info("用户点赞状态是：{}",result);
+                return result;
             } catch (Exception e) {
                 log.error("用户保存出错：#{}", e.getMessage());
                 return false;

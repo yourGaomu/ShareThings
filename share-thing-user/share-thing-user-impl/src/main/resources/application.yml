@@ -6,4 +6,10 @@ thread:
     queue-capacity: 2000  # 自定义队列容量
     keep-alive-seconds: 30
     name-prefix: user-biz-thread-
+#自定义消费者组信息
+# ==================== Kafka配置 ====================
+zhang:
+  kafka:
+    consumer:
+      group-id: share_thing_user_consume
 

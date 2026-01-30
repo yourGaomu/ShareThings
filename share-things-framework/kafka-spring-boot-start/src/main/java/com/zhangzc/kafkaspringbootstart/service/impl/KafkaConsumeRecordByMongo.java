@@ -1,8 +1,10 @@
 package com.zhangzc.kafkaspringbootstart.service.impl;
 
+import com.zhangzc.sharethingscommon.utils.TimeUtil;
 import com.zhangzc.kafkaspringbootstart.core.mongo.MogoKafkaRecord;
 import com.zhangzc.kafkaspringbootstart.service.StoreKafkaRecord;
 import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -28,7 +30,7 @@ public class KafkaConsumeRecordByMongo implements StoreKafkaRecord {
                 mongoKafkaRecord.setTopic(producerRecord.topic());
                 mongoKafkaRecord.setType("SEND");
                 mongoKafkaRecord.setStatus("SUCCESS");
-                mongoKafkaRecord.setCreateTime(LocalDateTime.now());
+                mongoKafkaRecord.setCreateTime(TimeUtil.getDateTime(LocalDateTime.now()));
                 mongoUtil.insert(mongoKafkaRecord, "kafka_record");
                 return true;
             } catch (Exception e) {
@@ -37,8 +39,6 @@ public class KafkaConsumeRecordByMongo implements StoreKafkaRecord {
                 return false;
             }
         });
-
-
     }
 
     @Override
@@ -53,7 +53,7 @@ public class KafkaConsumeRecordByMongo implements StoreKafkaRecord {
                 mongoKafkaRecord.setTopic(producerRecord.topic());
                 mongoKafkaRecord.setType("SEND");
                 mongoKafkaRecord.setStatus("FAIL");
-                mongoKafkaRecord.setCreateTime(LocalDateTime.now());
+                mongoKafkaRecord.setCreateTime(TimeUtil.getDateTime(LocalDateTime.now()));
                 mongoUtil.insert(mongoKafkaRecord, "kafka_record");
                 return true;
             } catch (Exception e) {

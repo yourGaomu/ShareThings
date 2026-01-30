@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Document(collection = "kafka_record")
 @Data
@@ -28,6 +29,6 @@ public class MogoKafkaRecord {
 
     private String status; // SUCCESS/FAIL
 
-    private LocalDateTime createTime;
+    private Date createTime;
 
 }

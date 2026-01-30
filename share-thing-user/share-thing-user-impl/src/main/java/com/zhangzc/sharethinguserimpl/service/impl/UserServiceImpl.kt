@@ -442,7 +442,7 @@ class UserServiceImpl(
      override fun likeArticle(articleId: String, userId: String) {
         //发送Rpc请求
         CompletableFuture.runAsync({
-            val userIdsByArticleIds: MutableMap<String?, String?> =
+            val userIdsByArticleIds =
                 articleRpc.getUserIdsByArticleIds(listOf<String>(articleId))
             //获取作者id
             val authorId = userIdsByArticleIds.get(articleId)

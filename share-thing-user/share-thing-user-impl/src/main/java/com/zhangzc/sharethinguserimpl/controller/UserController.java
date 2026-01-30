@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/bbs/user/")
 @RequiredArgsConstructor
@@ -30,13 +32,13 @@ public class UserController {
     }
 
     @PostMapping("/updateLikeState")
-    public R<String> likeArticle(@RequestBody String articleId) {
+    public R<String> likeArticle(@RequestBody Map<String,String> articleId) {
         Object o = GlobalContext.get();
         if (o == null) {
             throw new BusinessException(ResponseCodeEnum.USER_NOT_FOUND);
         }
         String userId = (String) o;
-        userService.likeArticle(articleId,userId);
+        userService.likeArticle(articleId.get("articleId"),userId);
         return R.ok("用户点赞文章成功");
     }
 

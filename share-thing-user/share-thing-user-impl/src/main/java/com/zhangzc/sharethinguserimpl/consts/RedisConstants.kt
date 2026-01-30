@@ -11,5 +11,6 @@ object RedisConstants {
     const val RedisRolePermissions = "RolePermissionsMap"
     const val RedisPermissionsInfo = "PermissionsInfoMap"
     const val HotAuthorsZSet = "HotAuthorsZSet:"
+    const val RedisUserHistory = "UserHistory:"
 
 }

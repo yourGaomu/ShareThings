@@ -5,20 +5,29 @@
 <mapper namespace="com.zhangzc.sharethingcommentimpl.mapper.FsCommentMapper">
 
     <resultMap id="BaseResultMap" type="com.zhangzc.sharethingcommentimpl.pojo.domain.FsComment">
-            <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="pre_id" column="pre_id" jdbcType="INTEGER"/>
-            <result property="content" column="content" jdbcType="VARCHAR"/>
-            <result property="article_id" column="article_id" jdbcType="INTEGER"/>
-            <result property="state" column="state" jdbcType="TINYINT"/>
-            <result property="is_deleted" column="is_deleted" jdbcType="TINYINT"/>
-            <result property="comment_user" column="comment_user" jdbcType="BIGINT"/>
-            <result property="create_time" column="create_time" jdbcType="TIMESTAMP"/>
-            <result property="update_time" column="update_time" jdbcType="TIMESTAMP"/>
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="preId" column="pre_id" jdbcType="INTEGER"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="articleId" column="article_id" jdbcType="INTEGER"/>
+        <result property="state" column="state" jdbcType="TINYINT"/>
+        <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
+        <result property="commentUser" column="comment_user" jdbcType="BIGINT"/>
+        <!-- 新增字段配置 -->
+        <result property="commentUserName" column="comment_user_name" jdbcType="VARCHAR"/>
+        <result property="picture" column="picture" jdbcType="VARCHAR"/>
+        <result property="level" column="level" jdbcType="VARCHAR"/>
+        <result property="likeCount" column="like_count" jdbcType="BIGINT"/>
+        <result property="repliesCount" column="replies_count" jdbcType="INTEGER"/>
+        <result property="depth" column="depth" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,pre_id,content,
         article_id,state,is_deleted,
-        comment_user,create_time,update_time
+        comment_user,comment_user_name,picture,
+        level,like_count,replies_count,
+        depth,create_time,update_time
     </sql>
 </mapper>

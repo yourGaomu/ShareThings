@@ -23,6 +23,8 @@
         <module>globalContext-spring-boot-start</module>
         <module>sms-spring-boot-start</module>
         <module>leaf-spring-boot-starter</module>
+        <module>mongodb-spring-boot-start</module>
+        <module>thredlocalpool-spring-boot-start</module>
     </modules>
     <dependencies>
         <dependency>

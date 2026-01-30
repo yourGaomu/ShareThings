@@ -55,6 +55,7 @@ public class AddPVByArticle {
             Map<String, Object> map = new HashMap<>();
             //那个用户发生了什么行为
             map.put(UserActionEnum.ARTICLE_READ.getActionName(), userId);
+            map.put("articleId", annotationValue);
             kafkaUtills.sendMessage(KafKaConst.USER_BEHAVIOR_TOPIC, map);
         }, threadPoolTaskExecutor);
 

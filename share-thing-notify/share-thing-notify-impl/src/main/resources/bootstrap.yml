@@ -15,6 +15,9 @@ spring:
         password: nacos
         file-extension: yaml
         shared-configs: # 共享配置
+          - data-id: share_mongodb.yaml
+            group: mongodb
+            refresh: true
           - data-id: share_notify.yaml
             group: mysql
             refresh: true

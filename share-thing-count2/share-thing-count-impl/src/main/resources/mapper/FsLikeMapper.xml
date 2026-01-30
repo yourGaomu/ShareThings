@@ -19,24 +19,27 @@
     </sql>
 
     <!-- 无则添加，有则取反点赞状态 -->
+    <!-- 无则添加，有则取反点赞状态 -->
     <insert id="saveFslike" parameterType="com.zhangzc.sharethingcountimpl.pojo.domain.FsLike">
         INSERT INTO fs_like (
+        article_id,  <!-- 补充核心关联字段：文章ID，必加！ -->
         author_id,
         state,
         like_user,
         create_time,
         update_time
         ) VALUES (
+        #{fsLike.articleId},  <!-- 对应实体类的articleId属性 -->
         #{fsLike.authorId},
-        1,  <!-- 新增默认点赞状态为1 -->
+        1,  <!-- 新增默认点赞状态为1（点赞） -->
         #{fsLike.likeUser},
-        #{fslike.createTime},
-        #{fslike.updateTime}
+        #{fsLike.createTime},
+        #{fsLike.updateTime}
         )
         ON DUPLICATE KEY UPDATE
-        state = 1 - state,  <!-- 状态取反核心逻辑 -->
-        update_time = #{fslike.updateTime},
-        author_id = #{fsLike.authorId}
+        state = 1 - state,  <!-- 状态取反：1→0（取消点赞），0→1（重新点赞） -->
+        update_time = #{fsLike.updateTime}
+        <!-- 无需更新author_id，唯一索引确定后作者ID不会变，删掉多余更新 -->
     </insert>
     
 </mapper>

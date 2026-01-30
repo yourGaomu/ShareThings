@@ -15,6 +15,12 @@ spring:
         password: nacos
         file-extension: yaml
         shared-configs: # 共享配置
+          - data-id: share_mongodb.yaml
+            group: mongodb
+            refresh: true
+          - data-id: share_kafka.yaml
+            group: kafka
+            refresh: true
           - data-id: share_security.yaml
             group: security
             refresh: true

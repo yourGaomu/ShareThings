@@ -15,6 +15,9 @@ spring:
         password: nacos
         file-extension: yaml
         shared-configs: # 共享配置
+          - data-id: share_kafka.yaml
+            group: kafka
+            refresh: true
           - data-id: share_comment.yaml
             group: mysql
             refresh: true

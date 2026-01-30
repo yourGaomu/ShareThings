@@ -8,9 +8,12 @@ import com.zhangzc.sharethingarticleapi.rpc.ArticleRpc;
 import com.zhangzc.sharethingarticleimpl.consts.RedisUser4ArticleConst;
 import com.zhangzc.sharethingarticleimpl.pojo.domain.FsArticle;
 import com.zhangzc.sharethingarticleimpl.server.FsArticleService;
+import com.zhangzc.sharethingscommon.pojo.dto.ArticleDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.CollectionUtils;
 
@@ -97,5 +100,17 @@ public class ArticleRpcImpl implements ArticleRpc {
         }
 
         return result;
+    }
+
+    @Override
+    public List<ArticleDTO> getArticleDtoByArticleIds(List<String> articleIds) {
+        return fsArticleService.lambdaQuery()
+                .eq(FsArticle::getState, 1)
+                .eq(FsArticle::getIsDeleted, 0)
+                .in(FsArticle::getId, articleIds).list().stream().map(article -> {
+            ArticleDTO articleDTO = new ArticleDTO();
+            BeanUtils.copyProperties(article, articleDTO);
+            return articleDTO;
+        }).toList();
     }
 }

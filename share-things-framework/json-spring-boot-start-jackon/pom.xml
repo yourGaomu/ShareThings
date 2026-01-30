@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>com.zhangzc</groupId>
-            <artifactId>book-common</artifactId>
+            <artifactId>share-things-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 

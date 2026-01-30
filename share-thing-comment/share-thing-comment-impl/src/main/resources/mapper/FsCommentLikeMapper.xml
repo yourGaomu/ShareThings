@@ -6,11 +6,11 @@
 
     <resultMap id="BaseResultMap" type="com.zhangzc.sharethingcommentimpl.pojo.domain.FsCommentLike">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="comment_id" column="comment_id" jdbcType="INTEGER"/>
+            <result property="commentId" column="comment_id" jdbcType="INTEGER"/>
             <result property="state" column="state" jdbcType="TINYINT"/>
-            <result property="like_user" column="like_user" jdbcType="BIGINT"/>
-            <result property="create_time" column="create_time" jdbcType="TIMESTAMP"/>
-            <result property="update_time" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="likeUser" column="like_user" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
