@@ -172,7 +172,7 @@ class NotifyServiceImpl(
     /**
      * 获取用户未读通知数量（广播 + 定向），不区分类型
      */
-    fun getUnreadCount(userId: Long): Long {
+    override fun getUnreadCount(userId: Long): Long {
         // 广播未读
         val broadcastState: FsNotifyBroadcastState? = fsNotifyBroadcastStateService.getById(userId)
         val lastReadNotifyId = broadcastState?.lastReadNotifyId ?: 0L
@@ -197,7 +197,7 @@ class NotifyServiceImpl(
     /**
      * 标记单个通知为已读
      */
-    fun markAsRead(notificationId: String, userId: Long): Boolean {
+    override fun markAsRead(notificationId: String, userId: Long): Boolean {
         val id = notificationId.toLongOrNull() ?: return false
         val notify = fsNotifyService.getById(id) ?: return false
 
@@ -250,7 +250,7 @@ class NotifyServiceImpl(
     /**
      * 标记当前用户所有通知为已读
      */
-    fun markAllAsRead(userId: Long): Boolean {
+    override fun markAllAsRead(userId: Long): Boolean {
         return try {
             val now = Date()
 
@@ -305,7 +305,7 @@ class NotifyServiceImpl(
      * - 如果 notification.receiverUserId 为空，则视为广播通知
      * - 否则视为定向通知，并在 fs_notify_user 中插入关系
      */
-    fun createNotification(notification: Notification): Notification {
+    override fun createNotification(notification: Notification): Notification {
         val now = Date()
 
         val notify = FsNotify()

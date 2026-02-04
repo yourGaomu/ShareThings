@@ -20,7 +20,9 @@ public enum ResponseCodeEnum implements ResponseCodeInterface {
     USER_NOT_FOUND("404", "用户不存在"),
     USER_PASSWORD_ERROR("400", "密码不正确"),
     RANK_ERROR("400", "排行榜异常"),
+    ARTICLE_NOT_FOUND("503","文章不存在"),
     CANAL_ERROR("500", "canal异常");
+
     private final String code;
     private final String meg;
 

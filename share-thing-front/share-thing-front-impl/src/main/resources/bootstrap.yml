@@ -15,6 +15,12 @@ spring:
         password: nacos
         file-extension: yaml
         shared-configs: # 共享配置
+          - data-id: sensitiveWord.yaml
+            group: sensitiveWord
+            refresh: true
+          - data-id: share_kafka.yaml
+            group: kafka
+            refresh: true
           - data-id: share_front.yaml
             group: mysql
             refresh: true

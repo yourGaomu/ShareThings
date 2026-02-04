@@ -11,6 +11,12 @@ import org.jetbrains.annotations.NotNull;
 public class NodeDTO {
 
     /**
+     * 节点ID
+     * 更新时必填
+     */
+    private Long id;
+
+    /**
      * 父节点ID
      * null 或 0 表示根目录，非必填
      */
@@ -33,6 +39,12 @@ public class NodeDTO {
      * 当 nodeType = ARTICLE 时 必填
      */
     private Long articleId;
+
+    /**
+     * 排序权重值
+     * 数值越小越靠前
+     */
+    private Integer sortOrder;
 
     /**
      * 节点类型枚举

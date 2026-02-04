@@ -1,6 +1,8 @@
 package com.zhangzc.sharethingarticleimpl.controller;
 
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.zhangzc.fakebookspringbootstartjackon.Utils.JsonUtils;
 import com.zhangzc.globalcontextspringbootstart.context.GlobalContext;
 import com.zhangzc.miniospringbootstart.utills.MinioUtil;
 import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
@@ -47,13 +49,57 @@ public class ArticleController {
     public R<String> uploadPicture(@RequestParam(value = "file", required = false) MultipartFile picture) throws Exception {
         return R.ok("成功", minioUtil.uploadFile(picture));
     }
+    
 
     @PostMapping("/create")
-    public R<Boolean> create(@RequestParam(value = "file", required = false) MultipartFile picture,
-                             @RequestBody ArticleDTO articleDTO,
-                             @RequestBody List<Integer> labelIds) {
-        articleService.create(picture, articleDTO, labelIds);
-        return R.ok();
+    public R<ArticleDTO> create(@RequestParam(value = "file", required = false) MultipartFile file,
+                                @RequestParam("title") String title,
+                                @RequestParam("markdown") String markdown,
+                                @RequestParam("html") String html,
+                                @RequestParam(value = "labelIds", required = false) List<Long> labelIds) {
+        
+        ArticleDTO articleDTO = new ArticleDTO();
+        articleDTO.setTitle(title);
+        articleDTO.setMarkdown(markdown);
+        articleDTO.setHtml(html);
+        // 设置 content 用于生成简介，使用 markdown 内容
+        articleDTO.setContent(markdown);
+
+        List<Integer> labelIdsInt = new ArrayList<>();
+        if (labelIds != null) {
+            for (Long id : labelIds) {
+                labelIdsInt.add(id.intValue());
+            }
+        }
+
+        ArticleDTO result = articleService.create(file, articleDTO, labelIdsInt);
+        return R.ok(result);
+    }
+
+    @PostMapping("/update")
+    public R<Boolean> update(@RequestParam(value = "file", required = false) MultipartFile file,
+                             @RequestParam("id") Long id,
+                             @RequestParam("title") String title,
+                             @RequestParam("markdown") String markdown,
+                             @RequestParam("html") String html,
+                             @RequestParam(value = "labelIds", required = false) List<Long> labelIds) {
+
+        ArticleDTO articleDTO = new ArticleDTO();
+        articleDTO.setId(Math.toIntExact(id));
+        articleDTO.setTitle(title);
+        articleDTO.setMarkdown(markdown);
+        articleDTO.setHtml(html);
+        articleDTO.setContent(markdown);
+
+        List<Integer> labelIdsInt = new ArrayList<>();
+        if (labelIds != null) {
+            for (Long labelId : labelIds) {
+                labelIdsInt.add(labelId.intValue());
+            }
+        }
+
+        Boolean result = articleService.update(file, articleDTO, labelIdsInt);
+        return R.ok(result != null && result ? "更新成功" : "更新失败");
     }
 
     @PostMapping("getList")

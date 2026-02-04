@@ -9,6 +9,8 @@ import com.zhangzc.redisspringbootstart.utills.RedisUtil
 import com.zhangzc.sharethingarticleapi.rpc.ArticleRpc
 import com.zhangzc.sharethingcountapi.rpc.likeCount
 import com.zhangzc.sharethingcountapi.rpc.pvCount
+import com.zhangzc.kafkaspringbootstart.utills.KafkaUtills
+import com.zhangzc.sharethingscommon.enums.UserActionEnum
 import com.zhangzc.sharethingscommon.exception.BusinessException
 import com.zhangzc.sharethingscommon.utils.PageResponse
 import com.zhangzc.sharethingscommon.utils.TimeUtil
@@ -44,6 +46,7 @@ class UserServiceImpl(
     private val authorHeatDayServiceImpl: AuthorHeatDayServiceImpl,
     private val authorHeatBehaviorServiceImpl: AuthorHeatBehaviorServiceImpl,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    private val kafkaUtills: KafkaUtills,
     @DubboReference(check = false, timeout = 5000)
     private val articleRpc: ArticleRpc,
     @DubboReference(check = false, timeout = 5000)
@@ -446,7 +449,18 @@ class UserServiceImpl(
                 articleRpc.getUserIdsByArticleIds(listOf<String>(articleId))
             //获取作者id
             val authorId = userIdsByArticleIds.get(articleId)
-            likeCountImpl.likeArticleByUserId(articleId, userId, authorId)
+            if (authorId == null) {
+                throw BusinessException(ResponseCodeEnum.ARTICLE_NOT_FOUND)
+            }
+            val result = likeCountImpl.likeArticleByUserId(articleId, userId, authorId)
+            if (result) {
+                //发送Kafka消息
+                val map = mapOf(
+                    UserActionEnum.LIKE.actionName to userId,
+                    "articleId" to articleId
+                )
+                kafkaUtills.sendMessage("UserBehavior", map)
+            }
         }, threadPoolTaskExecutor)
     }
 

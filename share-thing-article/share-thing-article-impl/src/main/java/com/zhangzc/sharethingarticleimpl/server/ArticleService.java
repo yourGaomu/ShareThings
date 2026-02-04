@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public interface ArticleService {
-    void create(MultipartFile picture, ArticleDTO articleDTO, List<Integer> labelIds);
+    ArticleDTO create(MultipartFile picture, ArticleDTO articleDTO, List<Integer> labelIds);
+
+    Boolean update(MultipartFile picture, ArticleDTO articleDTO, List<Integer> labelIds);
 
     PageResponse<ArticleDTO> getList(ArticleSearchDTO articleSearchDTO);
 

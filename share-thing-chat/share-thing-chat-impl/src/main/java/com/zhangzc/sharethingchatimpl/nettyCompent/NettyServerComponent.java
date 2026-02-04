@@ -1,38 +1,39 @@
 package com.zhangzc.sharethingchatimpl.nettyCompent;
 
-
-
 import com.zhangzc.sharethingchatimpl.nettyService.NettyServer;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
 public class NettyServerComponent {
 
+    @Value("${netty.server.port:9000}")
+    private int port;
+
     private NettyServer nettyServer;
 
     @PostConstruct
     public void startServer() {
-        nettyServer = new NettyServer(8080); // 配置端口号
+        nettyServer = new NettyServer(port);
         try {
             nettyServer.start(); // 启动Netty服务
+            log.info("Netty服务启动成功，监听端口: {}", port);
         } catch (Exception e) {
             log.error("Netty服务启动失败", e);
-            e.printStackTrace(); // 实际项目中应该使用日志记录异常信息
-            // 处理启动失败的情况，比如停止Spring Boot应用
-            System.exit(1);
+            // 抛出异常以终止Spring容器启动，避免应用在部分组件失败的情况下运行
+            throw new RuntimeException("Netty服务启动失败", e);
         }
     }
 
     @PreDestroy
     public void stopServer() {
         if (nettyServer != null) {
-            // 这里需要实现NettyServer的优雅关闭逻辑
-            // 通常需要关闭EventLoopGroup并等待当前处理的任务完成
-            nettyServer.stop(); // 假设NettyServer有一个stop方法来关闭服务
+            nettyServer.stop();
+            log.info("Netty服务已停止");
         }
     }
 }

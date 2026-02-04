@@ -25,6 +25,10 @@
         <module>leaf-spring-boot-starter</module>
         <module>mongodb-spring-boot-start</module>
         <module>thredlocalpool-spring-boot-start</module>
+        <module>sensitiveword-spring-boot-start</module>
+        <module>milvus-spring-boot-start</module>
+        <module>kafka-spring-boot-start</module>
+        <module>kt4J17-spring-boot-start</module>
     </modules>
     <dependencies>
         <dependency>
@@ -61,23 +65,6 @@
                     <target>17</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot.version}</version>
-                <configuration>
-                    <mainClass>com.zhangzc.sharethingsfreamework.ShareThingsFreameworkApplication</mainClass>
-                    <skip>true</skip>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>repackage</id>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -8,7 +8,9 @@ import com.zhangzc.mongodbspringbootstart.utills.MongoUtil
 import com.zhangzc.sharethingscommon.enums.UserActionEnum
 import com.zhangzc.sharethingscommon.utils.PageResponse
 import com.zhangzc.sharethingscommon.utils.TimeUtil
+import com.zhangzc.sharethinguserimpl.pojo.domain.BbsBrowsingHistory
 import com.zhangzc.sharethinguserimpl.pojo.mongo.HeatBehaviorRecordMongo
+import com.zhangzc.sharethinguserimpl.service.BbsBrowsingHistoryService
 import org.apache.dubbo.config.annotation.DubboService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -22,7 +24,8 @@ import java.time.LocalDateTime
 @Component
 @DubboService
 open class UserConsume(
-    private val mongoUtil: MongoUtil
+    private val mongoUtil: MongoUtil,
+    private val bbsBrowsingHistoryService: BbsBrowsingHistoryService
 ) {
     private val log = LoggerFactory.getLogger(UserConsume::class.java)
 
@@ -43,9 +46,15 @@ open class UserConsume(
             var parseObject =  JsonUtils
                 .parseObject(it.toString(), object : TypeReference<Map<String, String>>() {})
 
-            val actionEnum = UserActionEnum.valueOfActionName(parseObject.keys.first())
+            // 健壮地查找动作Key（排除articleId）
+            val actionKey = parseObject.keys.firstOrNull { key -> key != "articleId" }
+                ?: throw RuntimeException("Invalid message format: missing action key")
+
+            val actionEnum = UserActionEnum.valueOfActionName(actionKey)
+            val userId = parseObject[actionKey] ?: throw RuntimeException("Invalid message format: missing userId")
+
             //获取操作之后的结果
-            val handleUserActionResult = handleUserAction(actionEnum, parseObject.values.first(),
+            val handleUserActionResult = handleUserAction(actionEnum, userId,
                 parseObject.get("articleId") ?:run { "" })
             handleUserActionResult
         }?.let{
@@ -76,6 +85,7 @@ open class UserConsume(
 
             UserActionEnum.LIKE -> {
                 //点赞
+                result = handleOnLike(actionEnum, it, targetId)
             }
 
             UserActionEnum.COMMENT -> {
@@ -93,6 +103,10 @@ open class UserConsume(
             UserActionEnum.COMPLETE_READ -> {
                 //完整阅读
             }
+            UserActionEnum.PUBLISH_WORK -> {
+                //发布作品
+                result = handleOnPublishWork(actionEnum, it, targetId)
+            }
             else -> {
                 //其他行为
             }
@@ -102,6 +116,7 @@ open class UserConsume(
 
     private fun handleOnArticleReading(actionEnum: UserActionEnum, userId: String,targetId: String): Boolean {
         //构建
+        //用户行为构建记录
         val heatBehaviorRecordMongo = HeatBehaviorRecordMongo()
         heatBehaviorRecordMongo.userId = userId.toLong()
         heatBehaviorRecordMongo.targetId = targetId.toLong()
@@ -111,14 +126,70 @@ open class UserConsume(
         heatBehaviorRecordMongo.extInfo = mapOf(userId to actionEnum.description)
         heatBehaviorRecordMongo.updateTime= TimeUtil.getDateTime(LocalDateTime.now())
         heatBehaviorRecordMongo.createTime= TimeUtil.getDateTime(LocalDateTime.now())
+        //用户浏览记录
+        val record = BbsBrowsingHistory()
+        record.userId = userId.toLong()
+        record.articleId = targetId.toLong()
+        record.viewTime = TimeUtil.getDateTime(LocalDateTime.now())
+        record.createTime = TimeUtil.getDateTime(LocalDateTime.now())
+        record.updateTime = TimeUtil.getDateTime(LocalDateTime.now())
+        record.isDeleted = 0
         try {
+            // mongo插入 + 数据库保存
             mongoUtil.insert(heatBehaviorRecordMongo, "user_behavior_record")
+            bbsBrowsingHistoryService.save(record)
             return true
         } catch (e: Exception) {
-            //如果错误类型是DuplicateKeyException跳过
-            if (e is DuplicateKeyException){
+            if (e is DuplicateKeyException) {
+                // 预期异常（唯一键重复）
                 return true
+            } else {
+                // 非预期异常：记录日志，然后返回false
+                log.error(e.message)
+                return false
             }
+        }
+    }
+
+    private fun handleOnLike(actionEnum: UserActionEnum, userId: String, targetId: String): Boolean {
+        //构建
+        //用户行为构建记录
+        val heatBehaviorRecordMongo = HeatBehaviorRecordMongo()
+        heatBehaviorRecordMongo.userId = userId.toLong()
+        heatBehaviorRecordMongo.targetId = targetId.toLong()
+        heatBehaviorRecordMongo.targetType = 1
+        heatBehaviorRecordMongo.behaviorTypeId = actionEnum.id
+        heatBehaviorRecordMongo.behaviorStatus = 1
+        heatBehaviorRecordMongo.extInfo = mapOf(userId to actionEnum.description)
+        heatBehaviorRecordMongo.updateTime = TimeUtil.getDateTime(LocalDateTime.now())
+        heatBehaviorRecordMongo.createTime = TimeUtil.getDateTime(LocalDateTime.now())
+        try {
+            // mongo插入
+            mongoUtil.save(heatBehaviorRecordMongo, "user_behavior_record")
+            return true
+        } catch (e: Exception) {
+            log.error(e.message)
+            return false
+        }
+    }
+
+    private fun handleOnPublishWork(actionEnum: UserActionEnum, userId: String, targetId: String): Boolean {
+        //构建
+        //用户行为构建记录
+        val heatBehaviorRecordMongo = HeatBehaviorRecordMongo()
+        heatBehaviorRecordMongo.userId = userId.toLong()
+        heatBehaviorRecordMongo.targetId = targetId.toLong()
+        heatBehaviorRecordMongo.targetType = 1
+        heatBehaviorRecordMongo.behaviorTypeId = actionEnum.id
+        heatBehaviorRecordMongo.behaviorStatus = 1
+        heatBehaviorRecordMongo.extInfo = mapOf(userId to actionEnum.description)
+        heatBehaviorRecordMongo.updateTime = TimeUtil.getDateTime(LocalDateTime.now())
+        heatBehaviorRecordMongo.createTime = TimeUtil.getDateTime(LocalDateTime.now())
+        try {
+            // mongo插入
+            mongoUtil.save(heatBehaviorRecordMongo, "user_behavior_record")
+            return true
+        } catch (e: Exception) {
             log.error(e.message)
             return false
         }

@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.zhangzc.fakebookspringbootstartjackon.Utils.JsonUtils;
 import com.zhangzc.globalcontextspringbootstart.context.GlobalContext;
+import com.zhangzc.kafkaspringbootstart.utills.KafkaUtills;
 import com.zhangzc.listenerspringbootstart.utills.OnlineUserUtil;
+import com.zhangzc.miniospringbootstart.utills.MinioUtil;
 import com.zhangzc.mongodbspringbootstart.utills.MongoUtil;
 import com.zhangzc.redisspringbootstart.redisConst.RedisZHashConst;
 import com.zhangzc.redisspringbootstart.utills.RedisSetUtil;
@@ -34,6 +36,7 @@ import com.zhangzc.sharethingcountapi.rpc.followCount;
 import com.zhangzc.sharethingcountapi.rpc.likeCount;
 import com.zhangzc.sharethingscommon.enums.ArticleStateEnum;
 import com.zhangzc.sharethingscommon.enums.ResponseCodeEnum;
+import com.zhangzc.sharethingscommon.enums.UserActionEnum;
 import com.zhangzc.sharethingscommon.exception.BusinessException;
 import com.zhangzc.sharethingscommon.pojo.dto.*;
 import com.zhangzc.sharethingscommon.utils.PageResponse;
@@ -50,6 +53,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -79,6 +83,8 @@ public class ArticleServiceImpl implements ArticleService {
     private final RedisSetUtil redisSetUtil;
     private final FsArticleLabelService fsArticleLabelService;
     private final FsLabelService fsLabelService;
+    private final KafkaUtills kafkaUtills;
+    private final MinioUtil minioUtil;
     @Qualifier("threadPoolTaskExecutor")
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @DubboReference(check = false, timeout = 5000)
@@ -93,9 +99,15 @@ public class ArticleServiceImpl implements ArticleService {
     private userInfoSerach userInfoSerach;
 
     @Override
-    public void create(MultipartFile picture, ArticleDTO articleDTO, List<Integer> labelIds) {
+    public ArticleDTO create(MultipartFile picture, ArticleDTO articleDTO, List<Integer> labelIds) {
         if (picture != null) {
-            articleDTO.setPicture(picture.getOriginalFilename());
+            try {
+                String url = minioUtil.uploadFile(picture);
+                articleDTO.setPicture(url);
+            } catch (Exception e) {
+                log.error("图片上传失败", e);
+                throw new BusinessException(ResponseCodeEnum.SYSTEM_ERROR);
+            }
         }
         if (StringUtils.isBlank(articleDTO.getTitle()) || StringUtils.isBlank(articleDTO.getHtml())) {
             //标题和内容不能为空
@@ -107,7 +119,7 @@ public class ArticleServiceImpl implements ArticleService {
             throw new BusinessException(ResponseCodeEnum.USER_NOT_FOUND);
         }
         //开启事物
-        Boolean execute = transactionTemplate.execute(status -> {
+        FsArticle savedArticle = transactionTemplate.execute(status -> {
             try {
                 //保存进入文章数据库
                 //创建保存对象
@@ -133,15 +145,101 @@ public class ArticleServiceImpl implements ArticleService {
                 //计入Es数据库
                 //保存进入标签数据库
                 fsArticleLabelService.saveBatchByArticleIdAndLabelIds(fsArticle.getId(), labelIds, userId);
-                return true;
+                CompletableFuture.runAsync(() -> {
+                    //发送消息为用户发表了文章
+                    try {
+                        Map<String, String> map = new LinkedHashMap<>();
+                        map.put(UserActionEnum.PUBLISH_WORK.getActionName(), userId);
+                        map.put("articleId", fsArticle.getId().toString());
+                        kafkaUtills.sendMessage("UserBehavior", map);
+                    } catch (Exception e) {
+                        log.error("发送文章发布消息失败", e);
+                    }
+                }, threadPoolTaskExecutor);
+                return fsArticle;
             } catch (Exception e) {
                 status.setRollbackOnly();
-                return false;
+                log.error("创建文章失败", e);
+                return null;
             }
         });
-        if (Boolean.FALSE.equals(execute)) {
+        
+        if (savedArticle == null) {
             throw new BusinessException(ResponseCodeEnum.SYSTEM_ERROR);
         }
+        
+        // 回填 ID 并返回
+        articleDTO.setId(savedArticle.getId());
+        return articleDTO;
+    }
+
+    @Override
+    public Boolean update(MultipartFile picture, ArticleDTO articleDTO, List<Integer> labelIds) {
+        if (articleDTO.getId() == null) {
+            throw new BusinessException(ResponseCodeEnum.BAD_REQUEST);
+        }
+
+        // 验证用户权限
+        String userIdStr = GlobalContext.get().toString();
+        if (userIdStr == null) {
+            throw new BusinessException(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+        Long userId = Long.valueOf(userIdStr);
+
+        FsArticle existArticle = fsArticleService.getById(articleDTO.getId());
+        if (existArticle == null) {
+            throw new BusinessException(ResponseCodeEnum.RESOURCE_NOT_FOUND);
+        }
+        if (!existArticle.getCreateUser().equals(userId)) {
+            throw new BusinessException(ResponseCodeEnum.FORBIDDEN);
+        }
+
+        if (picture != null) {
+            try {
+                String url = minioUtil.uploadFile(picture);
+                articleDTO.setPicture(url);
+            } catch (Exception e) {
+                log.error("图片上传失败", e);
+                throw new BusinessException(ResponseCodeEnum.SYSTEM_ERROR);
+            }
+        }
+            try {
+                // 1. 更新 MySQL fs_article
+                FsArticle fsArticle = new FsArticle();
+                fsArticle.setId(articleDTO.getId());
+                fsArticle.setTitle(articleDTO.getTitle());
+                if (StringUtils.isNotBlank(articleDTO.getPicture())) {
+                    //fsArticle.setPicture(articleDTO.getPicture());
+                }
+                // 简介
+                fsArticle.setContent(articleDTO.getContent().length() > 200 ? articleDTO.getContent().substring(0, 200) : articleDTO.getContent());
+                fsArticle.setUpdateUser(userId);
+                fsArticle.setUpdateTime(new Date());
+                
+                fsArticleService.updateById(fsArticle);
+
+                // 2. 更新 MongoDB
+                Query query = new Query(Criteria.where("articleId").is(articleDTO.getId()));
+                Update update = new Update();
+                update.set("articleHtml", articleDTO.getHtml());
+                update.set("articleMarkdown", articleDTO.getMarkdown());
+                mongoUtil.updateFirst(query, update, "bbs_article_markdown_info");
+
+                // 3. 更新标签
+                // 先删除旧标签关联
+                fsArticleLabelService.remove(new LambdaQueryWrapper<FsArticleLabel>()
+                        .eq(FsArticleLabel::getArticleId, articleDTO.getId()));
+                
+                // 再添加新标签
+                if (labelIds != null && !labelIds.isEmpty()) {
+                     fsArticleLabelService.saveBatchByArticleIdAndLabelIds(articleDTO.getId(), labelIds, userIdStr);
+                }
+
+                return true;
+            } catch (Exception e) {
+                log.error("更新文章失败", e);
+                throw new BusinessException(ResponseCodeEnum.SYSTEM_ERROR);
+            }
     }
 
     @Override

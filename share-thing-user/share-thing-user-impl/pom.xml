@@ -54,19 +54,7 @@
 
         <dependency>
             <groupId>com.zhangzc</groupId>
-            <artifactId>share-thing-article-api</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.zhangzc</groupId>
             <artifactId>kafka-spring-boot-start</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.zhangzc</groupId>
-            <artifactId>share-thing-count-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
@@ -87,12 +75,7 @@
             <version>${canal.version}</version>
         </dependency>
 
-        <!-- 重复依赖去重：thredlocalpool-spring-boot-start只保留一个 -->
-        <dependency>
-            <groupId>com.zhangzc</groupId>
-            <artifactId>thredlocalpool-spring-boot-start</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
+        <!-- removed duplicate thredlocalpool-spring-boot-start -->
 
         <!-- Sa-Token 权限认证 -->
         <dependency>

@@ -20,6 +20,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
@@ -40,6 +42,22 @@ import java.util.Objects;
 @Configuration
 @EnableConfigurationProperties(KafkaProperty.class)
 public class KafkaConfig {
+
+    @Bean
+    public MongoTransactionManager mongoTransactionManager(MongoDatabaseFactory mongoDbFactory) {
+        return new MongoTransactionManager(mongoDbFactory);
+    }
+
+    // 2. 可选：手动显式声明TransactionTemplate Bean（推荐，更直观）
+    // 若不手动声明，Spring会通过事务管理器自动创建，此步为兜底/显式控制
+    @Bean
+    public TransactionTemplate transactionTemplate(MongoTransactionManager mongoTransactionManager) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate();
+        // 可自定义事务属性（如超时时间、隔离级别，按需配置）
+        // transactionTemplate.setTimeout(3000); // 事务超时3秒
+        transactionTemplate.setTransactionManager(mongoTransactionManager);
+        return transactionTemplate;
+    }
 
     /**
      * 生产者工厂配置
@@ -90,7 +108,7 @@ public class KafkaConfig {
     @Bean
     @ConditionalOnProperty(prefix = "zhang.kafka", name = "enable_mongo", havingValue = "true")
     public StoreKafkaRecord mongoStoreKafkaRecord(MongoUtil mongoUtil, TransactionTemplate transactionTemplate) {
-        return new KafkaConsumeRecordByMongo(mongoUtil, transactionTemplate);
+        return new KafkaConsumeRecordByMongo(mongoUtil);
     }
 
     @Bean

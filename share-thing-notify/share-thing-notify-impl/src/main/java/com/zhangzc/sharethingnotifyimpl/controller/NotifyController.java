@@ -3,6 +3,7 @@ package com.zhangzc.sharethingnotifyimpl.controller;
 import com.zhangzc.globalcontextspringbootstart.context.GlobalContext;
 import com.zhangzc.sharethingnotifyimpl.pojo.mongo.Notification;
 import com.zhangzc.sharethingnotifyimpl.pojo.vo.NotifySearchVo;
+import com.zhangzc.sharethingnotifyimpl.service.NotifyService;
 import com.zhangzc.sharethingnotifyimpl.service.impl.NotifyServiceImpl;
 import com.zhangzc.sharethingscommon.utils.PageResponse;
 import com.zhangzc.sharethingscommon.utils.R;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class NotifyController {
 
-    private final NotifyServiceImpl notifyService;
+    private final NotifyService notifyService;
 
     /**
      * 分页查询通知列表
